@@ -1,0 +1,1 @@
+from schema.attack import Attack
