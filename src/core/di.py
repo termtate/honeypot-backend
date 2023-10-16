@@ -1,5 +1,5 @@
 from injector import singleton, provider, Module
-from core import Settings
+from core.config import Settings
 
 
 class SettingsModule(Module):
