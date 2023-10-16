@@ -16,8 +16,10 @@ async def send_attack_info(
     async def send():
          while True:
             attack = await sockets_manager.get_attack_info()
-            await websocket.send_json(attack.model_dump_json())
+            await websocket.send_text(attack.model_dump_json())
     task = asyncio.create_task(send())
+    
+    # 检测websocket客户端断开
     try:
         while True:
             await websocket.receive_text()
