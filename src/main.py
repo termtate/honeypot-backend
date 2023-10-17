@@ -28,11 +28,12 @@ def make_app(injector: Injector) -> FastAPI:
     app.include_router(api_router, prefix=settings.API_V1_STR)
     attach_injector(app, injector)
     return app
+
+injector = Injector([SocketsManagerModule(), SettingsModule()])
     
+app = make_app(injector)
 
 if __name__ == '__main__':
     import uvicorn
-
-    injector = Injector([SocketsManagerModule(), SettingsModule()])
     
-    uvicorn.run(make_app(injector), port=8000)
+    uvicorn.run(app, port=8000)
