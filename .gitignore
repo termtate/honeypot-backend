@@ -8,3 +8,7 @@ wheels/
 
 # venv
 .venv
+
+# ide
+.vscode
+.idea
