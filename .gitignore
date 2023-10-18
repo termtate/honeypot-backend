@@ -10,5 +10,5 @@ wheels/
 .venv
 
 # ide
-.vscode
-.idea
+.vscode/
+.idea/
