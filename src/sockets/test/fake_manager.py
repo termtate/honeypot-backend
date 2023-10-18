@@ -1,9 +1,9 @@
-from asyncio import open_connection, Queue, create_task
-from typing import Any, Literal, Protocol
+from asyncio import Queue
 from schema import Attack
 from asyncio import Queue
 import asyncio
 from datetime import datetime
+from injector import singleton
 
 def _generate_fake_attack():
     return Attack(
@@ -22,6 +22,7 @@ def _generate_fake_attack():
     )
 
 
+@singleton
 class FakeSocketsManager:
     def __init__(self) -> None:
         self.message_queue: Queue[Attack] = Queue(maxsize=10)

@@ -1,9 +1,10 @@
 import asyncio
 from fastapi import WebSocket
 from sockets import SocketsManager
-from injector import inject
+from injector import inject, singleton
 
 
+@singleton
 class WebSocketManager:
     @inject
     def __init__(self, sockets_manager: SocketsManager) -> None:

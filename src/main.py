@@ -3,7 +3,6 @@ from contextlib import asynccontextmanager
 from sockets.manager import SocketsManager
 from injector import Injector
 from sockets.di import SocketsManagerModule
-from core.di import SettingsModule
 from core import Settings
 from sockets.manager import SocketsManager
 import asyncio
@@ -29,7 +28,7 @@ def make_app(injector: Injector) -> FastAPI:
     attach_injector(app, injector)
     return app
 
-injector = Injector([SocketsManagerModule(), SettingsModule()])
+injector = Injector([SocketsManagerModule()])
     
 app = make_app(injector)
 
