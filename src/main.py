@@ -13,11 +13,11 @@ from fastapi_injector import attach_injector
 async def lifespan(app: FastAPI, injector: Injector):
     sockets_manager = injector.get(SocketsManager)
     # https://stackoverflow.com/questions/76142431/how-to-run-another-application-within-the-same-running-event-loop
-    task = asyncio.create_task(sockets_manager.open_connections())
+    sockets_manager.open_connections()
 
     yield
     
-    task.cancel()
+    sockets_manager.close_connections()
 
 
 def make_app(injector: Injector) -> FastAPI:
