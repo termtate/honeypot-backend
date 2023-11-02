@@ -2,7 +2,10 @@ import asyncio
 from fastapi import WebSocket
 from sockets import SocketsManager
 from injector import inject, singleton
+from logging import getLogger
 
+
+logger = getLogger(__name__)
 
 @singleton
 class WebSocketManager:
@@ -20,6 +23,7 @@ class WebSocketManager:
             await asyncio.gather(*[
                 websocket.send_text(attack.model_dump_json()) for websocket in self.websocket_connections
             ])
+            logger.info(f"send attack to websockets {self.websocket_connections} on {attack.time}")
     
     
     def subscribe(self, websocket: WebSocket):
