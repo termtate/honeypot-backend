@@ -1,0 +1,1 @@
+from sockets.test.di import TestSocketsManagerModule
