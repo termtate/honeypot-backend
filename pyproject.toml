@@ -13,6 +13,7 @@ dependencies = [
     "uvicorn>=0.23.2",
     "fastapi-injector>=0.5.1",
     "websockets>=11.0.3",
+    "faker>=19.11.0",
 ]
 readme = "README.md"
 requires-python = ">= 3.10"
@@ -27,6 +28,7 @@ dev-dependencies = []
 
 [tool.rye.scripts]
 server = { cmd = "python -m uvicorn src.main:app --host 127.0.0.1 --port 8000", env = { PYTHONPATH = "./src/"} }
+test-server = { cmd = "python -m uvicorn src.test_main:app --host 127.0.0.1 --port 8000", env = { PYTHONPATH = "./src/"} }
 
 [tool.hatch.metadata]
 allow-direct-references = true
