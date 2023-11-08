@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 from datetime import datetime
-from typing import Literal, Annotated
+from typing import Annotated
 from pydantic.networks import IPvAnyAddress
 
 
@@ -20,3 +20,4 @@ class Attack(BaseModel):
     warning_info: str
     warning_level: int
     content: str
+    
