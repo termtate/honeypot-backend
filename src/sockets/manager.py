@@ -30,23 +30,24 @@ class RealSocketsManager(SocketsManager):
     @inject
     def __init__(self, sockets: list[Socket]) -> None:
         self.sockets = sockets
-        self.message_queue: Queue[Attack] = Queue()
+        self.message_queue = Queue[Attack]()
         self._tasks: list[asyncio.Task]
 
     
     async def _read_data_forever(self, socket: Socket):
-        reader, writer = await open_connection(
-            host=socket.ip,
-            port=socket.port
-        )
-        
-        try:
-            while True:
-                data = await reader.read()
-                await self.message_queue.put(decode(data))
-        finally:
+        async def handle_data(reader: asyncio.StreamReader, writer):
+            data = await reader.read()
+
+            addr = writer.get_extra_info('peername')
+            await self.message_queue.put(socket.attack_validator.validate(data).to_attack())
+
             writer.close()
             await writer.wait_closed()
+            
+        server = await asyncio.start_server(handle_data, socket.ip, socket.port)
+        
+        async with server:
+            await server.serve_forever()
             
             
     @override
