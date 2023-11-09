@@ -8,7 +8,6 @@ from schema import Attack
 from abc import ABC, abstractmethod
 from typing_extensions import override, Self
 
-from src.schema import Attack
 
 class AttackValidator(ABC):
     @classmethod
@@ -33,11 +32,13 @@ class Validator1(AttackValidator, BaseXmlModel, tag="Root"):
     connection_begin_time: Time = element(tag="ConnectBeginTime")
     time_stamp: int = element(tag="receiveTime")
     pack_length: int = element(tag="PacketLen")
-    source_ip: Annotated[str, IPvAnyAddress] = element(tag="ip_src")
-    dest_ip: Annotated[str, IPvAnyAddress] = element(tag="ip_dst")
+    source_ip: str = element(tag="ip_src")
+    dest_ip: str = element(tag="ip_dst")
     
     honeypot_type: ClassVar[dict[int, str]] = {
-        
+        1: "ICMP",
+        6: "TCP",
+        17: "UDP"
     }
     
     @override
@@ -54,7 +55,7 @@ class Validator1(AttackValidator, BaseXmlModel, tag="Root"):
             source_port=self.source_port,
             dest_ip=self.dest_ip,
             dest_port=self.dest_port,
-            transport_protocol=str(self.protocol),
+            transport_protocol=self.honeypot_type[self.protocol],
             honeypot_type=str(self.alert_type),
             attack_info="",
             source_address="",

@@ -2,7 +2,7 @@ import asyncio
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 from fastapi_injector import Injected
 from websocket import WebSocketManager
-from schema.attack import Attack
+from src.schema.attacks.attack import Attack
 
 router = APIRouter()
 
