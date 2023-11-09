@@ -54,7 +54,7 @@ class RealSocketsManager(SocketsManager):
     def open_connections(self):
         # assert self._task
         logger.info("start opening connections")
-        self._tasks = [asyncio.create_task(self._read_data_forever(socket) for socket in self.sockets)]
+        self._tasks = [asyncio.create_task(self._read_data_forever(socket)) for socket in self.sockets]
     
     
     @override
