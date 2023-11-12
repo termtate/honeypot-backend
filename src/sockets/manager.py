@@ -1,11 +1,11 @@
 from asyncio import open_connection, Queue, create_task
 from abc import ABC, abstractmethod
 from schema import Attack, Socket
-from sockets.decoder import decode
 import asyncio
 from injector import inject
 from logging import getLogger, DEBUG
 from typing_extensions import override
+from logger import Logger
 
 logger = getLogger(__name__)
 logger.setLevel(DEBUG)
@@ -28,18 +28,24 @@ class RealSocketsManager(SocketsManager):
     开启多个socket并同时接收数据，将接收的数据解析为`Attack`类并放入`self.message_queue`队列中 \n
     """
     @inject
-    def __init__(self, sockets: list[Socket]) -> None:
+    def __init__(self, sockets: list[Socket], logger: Logger) -> None:
         self.sockets = sockets
         self.message_queue = Queue[Attack]()
+        self.logger = logger
         self._tasks: list[asyncio.Task]
 
     
     async def _read_data_forever(self, socket: Socket):
-        async def handle_data(reader: asyncio.StreamReader, writer):
+        async def handle_data(reader: asyncio.StreamReader, writer: asyncio.StreamWriter):
             data = await reader.read()
-
             addr = writer.get_extra_info('peername')
-            await self.message_queue.put(socket.attack_validator.validate(data).to_attack())
+            self.logger.info(
+                f"received {data!r} on {addr}"
+            )
+            
+            attack = socket.attack_validator.validate(data).to_attack()
+            
+            await self.message_queue.put(attack)
 
             writer.close()
             await writer.wait_closed()
