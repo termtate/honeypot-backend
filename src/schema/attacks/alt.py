@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 from datetime import datetime
-from typing import Literal, Annotated, ClassVar
+from typing import Literal, Annotated, ClassVar, Mapping
 from pydantic.networks import IPvAnyAddress
 from pydantic_xml import BaseXmlModel, element
 from pydantic.functional_validators import BeforeValidator
@@ -35,7 +35,7 @@ class Validator1(AttackValidator, BaseXmlModel, tag="Root"):
     source_ip: str = element(tag="ip_src")
     dest_ip: str = element(tag="ip_dst")
     
-    honeypot_type: ClassVar[dict[int, str]] = {
+    honeypot_type: ClassVar[Mapping[int, str]] = {
         1: "ICMP",
         6: "TCP",
         17: "UDP"
