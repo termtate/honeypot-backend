@@ -1,9 +1,9 @@
 from injector import singleton, provider, Module
-from loguru import Logger, logger
-from core import Settings
+from loguru import logger
+from loguru._logger import Logger
 
 
-class SocketsManagerModule(Module):
+class LoggerModule(Module):
     @singleton
     @provider
     def provide_logger(self) -> Logger:
