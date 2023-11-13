@@ -1,10 +1,12 @@
 from abc import ABC, abstractmethod
+from types import TracebackType
 from schema import Attack, Socket
 import asyncio
 from injector import inject
 from typing_extensions import override
 from logger import Logger
-from aioreactive import AsyncSubject, AsyncObservable
+from aioreactive import AsyncSubject, AsyncObservable, AsyncIteratorObserver
+from contextlib import AbstractContextManager
 
 
 class SocketsManager(ABC):
@@ -17,12 +19,24 @@ class SocketsManager(ABC):
     @abstractmethod
     def close_connections(self) -> None: 
         pass
-    
 
 
-class RealSocketsManager(SocketsManager):
+
+class RealSocketsManager(SocketsManager, AbstractContextManager):
     """
-    开启多个socket并同时接收数据，将接收的数据解析为`Attack`类并放入`self.message_queue`队列中 \n
+    开启多个socket并同时接收数据，将接收的数据解析为`Attack`类并放入`self.stream` 可观察流 中 \n
+    在使用时，需要订阅`stream`获取数据
+    >>> from aioreactive import AsyncAnonymousObserver, AsyncIteratorObserver
+    ...
+    >>> sockets_manager = RealSocketsManager(...)
+    >>> with sockets_manager:
+    >>>     stream = sockets_manager.get_attack_stream()
+    >>>     async def on_receive(attack):
+    >>>         print(attack)
+    >>>     await stream.subscribe_async(AsyncAnonymousObserver(on_receive))
+    >>>     # 或者
+    >>>     async for attack in AsyncIteratorObserver(stream):
+    >>>         print(attack)
     """
     @inject
     def __init__(self, sockets: list[Socket], logger: Logger) -> None:
@@ -55,7 +69,6 @@ class RealSocketsManager(SocketsManager):
             
     @override
     def open_connections(self):
-        # assert self._task
         self.logger.info("start opening connections")
         self._tasks = [asyncio.create_task(self._read_data_forever(socket)) for socket in self.sockets]
     
@@ -72,6 +85,14 @@ class RealSocketsManager(SocketsManager):
             task.cancel()
         asyncio.create_task(self.stream.aclose())
     
+    
+    def __enter__(self):
+        self.open_connections()
+        return self
+    
+    
+    def __exit__(self, __exc_type, __exc_value, __traceback) -> bool | None:
+        self.close_connections()
     
         
 
