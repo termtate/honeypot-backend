@@ -33,7 +33,7 @@ def _generate_fake_attack():
 # @singleton
 class FakeSocketsManager(SocketsManager):
     def __init__(self) -> None:
-        self.message_queue: Queue[Attack] = Queue(maxsize=10)
+        self.message_queue = Queue[Attack](maxsize=10)
         self.tasks: list[asyncio.Task] | None = None
     
     
