@@ -15,6 +15,8 @@ dependencies = [
     "websockets>=11.0.3",
     "faker>=19.11.0",
     "pydantic-xml>=2.3.0",
+    "loguru>=0.7.2",
+    "aioreactive>=0.16.0",
 ]
 readme = "README.md"
 requires-python = ">= 3.10"

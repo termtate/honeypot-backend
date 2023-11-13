@@ -2,6 +2,7 @@ from pydantic_settings import BaseSettings
 from injector import singleton
 from schema import Socket, Attack
 from schema.attacks.alt import Validator1
+from datetime import timedelta
 
 @singleton
 class Settings(BaseSettings):
@@ -13,3 +14,5 @@ class Settings(BaseSettings):
         )
     ]
     API_V1_STR: str = "/api/v1"
+    
+    WEBSOCKET_BUFFER_SEND_INTERVAL: timedelta = timedelta(seconds=5)

@@ -1,18 +1,15 @@
-from asyncio import open_connection, Queue, create_task
 from abc import ABC, abstractmethod
 from schema import Attack, Socket
 import asyncio
 from injector import inject
-from logging import getLogger, DEBUG
 from typing_extensions import override
 from logger import Logger
+from aioreactive import AsyncSubject, AsyncObservable
 
-logger = getLogger(__name__)
-logger.setLevel(DEBUG)
 
 class SocketsManager(ABC):
     @abstractmethod
-    async def get_attack_info(self) -> Attack: 
+    def get_attack_stream(self) -> AsyncObservable[Attack]: 
         pass
     @abstractmethod
     def open_connections(self) -> None: 
@@ -30,7 +27,7 @@ class RealSocketsManager(SocketsManager):
     @inject
     def __init__(self, sockets: list[Socket], logger: Logger) -> None:
         self.sockets = sockets
-        self.message_queue = Queue[Attack]()
+        self.stream = AsyncSubject[Attack]()
         self.logger = logger
         self._tasks: list[asyncio.Task]
 
@@ -45,7 +42,7 @@ class RealSocketsManager(SocketsManager):
             
             attack = socket.attack_validator.validate(data).to_attack()
             
-            await self.message_queue.put(attack)
+            await self.stream.asend(attack)
 
             writer.close()
             await writer.wait_closed()
@@ -59,20 +56,21 @@ class RealSocketsManager(SocketsManager):
     @override
     def open_connections(self):
         # assert self._task
-        logger.info("start opening connections")
+        self.logger.info("start opening connections")
         self._tasks = [asyncio.create_task(self._read_data_forever(socket)) for socket in self.sockets]
     
     
     @override
-    async def get_attack_info(self) -> Attack:
-        return await self.message_queue.get()
+    def get_attack_stream(self):
+        return self.stream
     
     
     @override
     def close_connections(self):
-        logger.info("close connections")
+        self.logger.info("close connections")
         for task in self._tasks:
             task.cancel()
+        asyncio.create_task(self.stream.aclose())
     
     
         
