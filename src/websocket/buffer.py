@@ -29,9 +29,8 @@ def buffer(interval: int):
         async def asend(v):
             buffer.append(v)
         
-        async def aclose():
+        async def aclose():            
             task.cancel()
-            await s.aclose()
 
         await stream.subscribe_async(rx.AsyncAnonymousObserver(asend, aclose=aclose))
         
