@@ -8,6 +8,7 @@ from sockets.manager import SocketsManager
 import asyncio
 from api.api_v1.api import api_router
 from fastapi_injector import attach_injector
+from logger import LoggerModule
 
 @asynccontextmanager
 async def lifespan(app: FastAPI, injector: Injector):
@@ -28,8 +29,8 @@ def make_app(injector: Injector) -> FastAPI:
     attach_injector(app, injector)
     return app
 
-injector = Injector([SocketsManagerModule()])
-    
+injector = Injector([SocketsManagerModule(), LoggerModule()])
+
 app = make_app(injector)
 
 if __name__ == '__main__':
