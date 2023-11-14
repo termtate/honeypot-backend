@@ -18,6 +18,8 @@ dependencies = [
     "loguru>=0.7.2",
     "aioreactive>=0.16.0",
     "yapf>=0.40.2",
+    "ruff>=0.1.5",
+    "pre-commit>=3.5.0",
 ]
 readme = "README.md"
 requires-python = ">= 3.10"
