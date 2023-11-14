@@ -1,16 +1,14 @@
 from abc import ABC, abstractmethod
-from types import TracebackType
 from schema import Attack, Socket
 import asyncio
 from injector import inject
 from typing_extensions import override
 from logger import Logger
-from aioreactive import AsyncSubject, AsyncObservable, AsyncIteratorObserver
+from aioreactive import AsyncSubject, AsyncObservable
 from contextlib import AbstractContextManager
 
 
 class SocketsManager(ABC):
-
     @abstractmethod
     def get_attack_stream(self) -> AsyncObservable[Attack]:
         pass
@@ -49,12 +47,11 @@ class RealSocketsManager(SocketsManager, AbstractContextManager):
         self._tasks: list[asyncio.Task]
 
     async def _read_data_forever(self, socket: Socket):
-
         async def handle_data(
             reader: asyncio.StreamReader, writer: asyncio.StreamWriter
         ):
             data = await reader.read()
-            addr = writer.get_extra_info('peername')
+            addr = writer.get_extra_info("peername")
             self.logger.info(f"received {data!r} on {addr}")
 
             attack = socket.attack_validator.validate(data).to_attack()
@@ -64,9 +61,7 @@ class RealSocketsManager(SocketsManager, AbstractContextManager):
             writer.close()
             await writer.wait_closed()
 
-        server = await asyncio.start_server(
-            handle_data, socket.ip, socket.port
-        )
+        server = await asyncio.start_server(handle_data, socket.ip, socket.port)
 
         async with server:
             await server.serve_forever()

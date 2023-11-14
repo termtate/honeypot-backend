@@ -1,2 +1,4 @@
-from schema.attacks.attack import Attack
-from schema.socket import Socket
+from schema.socket import Socket as Socket
+from schema.attacks.attack import Attack as Attack
+from schema.attacks.alt import Validator1 as Validator1
+from schema.attacks.alt import AttackValidator as AttackValidator

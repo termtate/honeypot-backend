@@ -2,7 +2,6 @@ from schema import Attack
 from asyncio import Queue
 import asyncio
 from datetime import datetime
-from injector import singleton, inject
 from sockets.manager import SocketsManager
 from typing_extensions import override
 from random import choice
@@ -26,7 +25,7 @@ def _generate_fake_attack():
         source_address="China",
         warning_info="warning info",
         warning_level=choice([0, 1, 2, 3]),
-        content="content"
+        content="content",
     )
 
 
@@ -35,22 +34,21 @@ class FakeSocketsManager(SocketsManager):
     def __init__(self) -> None:
         self.message_queue = Queue[Attack](maxsize=10)
         self.tasks: list[asyncio.Task] | None = None
-    
-    
+
     async def _send_fake_data_forever(self, interval: int):
         while True:
             await asyncio.sleep(interval)
             await self.message_queue.put(_generate_fake_attack())
-    
+
     @override
-    def open_connections(self) -> None: 
+    def open_connections(self) -> None:
         self.tasks = [
             asyncio.create_task(self._send_fake_data_forever(5)),
             asyncio.create_task(self._send_fake_data_forever(9)),
         ]
-    
+
     @override
-    async def get_attack_info(self) -> Attack: 
+    async def get_attack_info(self) -> Attack:
         return await self.message_queue.get()
 
     @override

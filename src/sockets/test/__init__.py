@@ -1,1 +1,1 @@
-from sockets.test.di import TestSocketsManagerModule
+from sockets.test.di import TestSocketsManagerModule as TestSocketsManagerModule

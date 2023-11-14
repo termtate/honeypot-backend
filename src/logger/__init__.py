@@ -1,2 +1,2 @@
-from loguru._logger import Logger
-from logger.di import LoggerModule
+from loguru._logger import Logger as Logger
+from logger.di import LoggerModule as LoggerModule

@@ -1,7 +1,5 @@
-from pydantic import BaseModel
 from datetime import datetime
-from typing import Literal, Annotated, ClassVar, Mapping
-from pydantic.networks import IPvAnyAddress
+from typing import Annotated, ClassVar, Mapping
 from pydantic_xml import BaseXmlModel, element
 from pydantic.functional_validators import BeforeValidator
 from schema import Attack
@@ -10,7 +8,6 @@ from typing_extensions import override, Self
 
 
 class AttackValidator(ABC):
-
     @classmethod
     @abstractmethod
     def validate(cls, content: bytes) -> Self:
@@ -22,8 +19,8 @@ class AttackValidator(ABC):
 
 
 Time = Annotated[
-    datetime,
-    BeforeValidator(lambda s: datetime.strptime(s, "%Y-%m-%d-%H-%M-%S-%f"))]
+    datetime, BeforeValidator(lambda s: datetime.strptime(s, "%Y-%m-%d-%H-%M-%S-%f"))
+]
 
 
 class Validator1(AttackValidator, BaseXmlModel, tag="Root"):
@@ -40,11 +37,7 @@ class Validator1(AttackValidator, BaseXmlModel, tag="Root"):
     source_ip: str = element(tag="ip_src")
     dest_ip: str = element(tag="ip_dst")
 
-    honeypot_type: ClassVar[Mapping[int, str]] = {
-        1: "ICMP",
-        6: "TCP",
-        17: "UDP"
-    }
+    honeypot_type: ClassVar[Mapping[int, str]] = {1: "ICMP", 6: "TCP", 17: "UDP"}
 
     @override
     @classmethod
@@ -65,5 +58,5 @@ class Validator1(AttackValidator, BaseXmlModel, tag="Root"):
             source_address="",
             warning_info="",
             warning_level=0,
-            content=""
+            content="",
         )

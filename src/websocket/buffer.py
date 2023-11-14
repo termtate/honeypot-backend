@@ -1,6 +1,6 @@
 import aioreactive as rx
 import asyncio
-from typing import TypeVar, Callable, Awaitable
+from typing import TypeVar
 
 T = TypeVar("T")
 
@@ -8,16 +8,14 @@ T = TypeVar("T")
 def buffer(interval: int):
     """
     每隔一定的时间间隔分组发送收到的数据
-    
+
     1 -> 2 -> 3 -> 4 -> 5 -> ...
             |         |
             |         |
           [1, 2]    [3, 4]
     """
 
-    async def _buffer(
-        stream: rx.AsyncObservable[T]
-    ) -> rx.AsyncObservable[list[T]]:
+    async def _buffer(stream: rx.AsyncObservable[T]) -> rx.AsyncObservable[list[T]]:
         s = rx.AsyncSubject[list[T]]()
         buffer: list[T] = []
 
@@ -36,9 +34,7 @@ def buffer(interval: int):
         async def aclose():
             task.cancel()
 
-        await stream.subscribe_async(
-            rx.AsyncAnonymousObserver(asend, aclose=aclose)
-        )
+        await stream.subscribe_async(rx.AsyncAnonymousObserver(asend, aclose=aclose))
 
         return s
 

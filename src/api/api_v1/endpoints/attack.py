@@ -1,8 +1,6 @@
-import asyncio
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 from fastapi_injector import Injected
 from websocket import WebSocketManager
-from src.schema.attacks.attack import Attack
 
 router = APIRouter()
 
@@ -10,7 +8,7 @@ router = APIRouter()
 @router.websocket("/ws")
 async def send_attack_info(
     websocket: WebSocket,
-    websocket_manager: WebSocketManager = Injected(WebSocketManager)
+    websocket_manager: WebSocketManager = Injected(WebSocketManager),
 ):
     await websocket.accept()
 

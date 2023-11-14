@@ -1,1 +1,1 @@
-from websocket.manager import WebSocketManager
+from websocket.manager import WebSocketManager as WebSocketManager

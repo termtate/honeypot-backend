@@ -4,8 +4,6 @@ from sockets.manager import SocketsManager
 from injector import Injector
 from sockets.di import SocketsManagerModule
 from core import Settings
-from sockets.manager import SocketsManager
-import asyncio
 from api.api_v1.api import api_router
 from fastapi_injector import attach_injector
 from logger import LoggerModule
@@ -35,7 +33,7 @@ injector = Injector([SocketsManagerModule(), LoggerModule()])
 
 app = make_app(injector)
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     import uvicorn
 
     uvicorn.run(app, port=8000)

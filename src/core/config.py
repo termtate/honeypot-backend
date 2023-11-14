@@ -1,6 +1,6 @@
 from pydantic_settings import BaseSettings
 from injector import singleton
-from schema import Socket, Attack
+from schema import Socket
 from schema.attacks.alt import Validator1
 from datetime import timedelta
 
