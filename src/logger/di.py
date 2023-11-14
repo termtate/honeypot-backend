@@ -4,6 +4,7 @@ from loguru._logger import Logger
 
 
 class LoggerModule(Module):
+
     @singleton
     @provider
     def provide_logger(self) -> Logger:

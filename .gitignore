@@ -10,7 +10,6 @@ wheels/
 .venv
 
 # ide
-.vscode/
 .idea/
 
 # log

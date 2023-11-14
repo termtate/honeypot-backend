@@ -10,6 +10,7 @@ from api.api_v1.api import api_router
 from fastapi_injector import attach_injector
 from logger import LoggerModule
 
+
 @asynccontextmanager
 async def lifespan(app: FastAPI, injector: Injector):
     sockets_manager = injector.get(SocketsManager)
@@ -17,7 +18,7 @@ async def lifespan(app: FastAPI, injector: Injector):
     sockets_manager.open_connections()
 
     yield
-    
+
     sockets_manager.close_connections()
 
 
@@ -29,11 +30,12 @@ def make_app(injector: Injector) -> FastAPI:
     attach_injector(app, injector)
     return app
 
+
 injector = Injector([SocketsManagerModule(), LoggerModule()])
 
 app = make_app(injector)
 
 if __name__ == '__main__':
     import uvicorn
-    
+
     uvicorn.run(app, port=8000)

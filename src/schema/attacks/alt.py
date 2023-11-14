@@ -10,16 +10,21 @@ from typing_extensions import override, Self
 
 
 class AttackValidator(ABC):
+
     @classmethod
     @abstractmethod
-    def validate(cls, content: bytes) -> Self: 
+    def validate(cls, content: bytes) -> Self:
         pass
-    
+
     @abstractmethod
     def to_attack(self) -> Attack:
         pass
 
-Time = Annotated[datetime, BeforeValidator(lambda s: datetime.strptime(s, "%Y-%m-%d-%H-%M-%S-%f"))]
+
+Time = Annotated[
+    datetime,
+    BeforeValidator(lambda s: datetime.strptime(s, "%Y-%m-%d-%H-%M-%S-%f"))]
+
 
 class Validator1(AttackValidator, BaseXmlModel, tag="Root"):
     symbol: int = element(tag="SYMBOL")
@@ -34,19 +39,18 @@ class Validator1(AttackValidator, BaseXmlModel, tag="Root"):
     pack_length: int = element(tag="PacketLen")
     source_ip: str = element(tag="ip_src")
     dest_ip: str = element(tag="ip_dst")
-    
+
     honeypot_type: ClassVar[Mapping[int, str]] = {
         1: "ICMP",
         6: "TCP",
         17: "UDP"
     }
-    
+
     @override
     @classmethod
     def validate(cls, content):
         return cls.from_xml(content)
-        
-    
+
     @override
     def to_attack(self) -> Attack:
         return Attack(
@@ -62,5 +66,4 @@ class Validator1(AttackValidator, BaseXmlModel, tag="Root"):
             warning_info="",
             warning_level=0,
             content=""
-            
         )

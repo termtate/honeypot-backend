@@ -9,13 +9,13 @@ router = APIRouter()
 
 @router.websocket("/ws")
 async def send_attack_info(
-    websocket: WebSocket, 
+    websocket: WebSocket,
     websocket_manager: WebSocketManager = Injected(WebSocketManager)
 ):
     await websocket.accept()
-    
+
     websocket_manager.subscribe(websocket)
-    
+
     # 检测websocket客户端断开
     try:
         while True:

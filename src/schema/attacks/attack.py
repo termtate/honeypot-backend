@@ -20,4 +20,3 @@ class Attack(BaseModel):
     warning_info: str
     warning_level: int
     content: str
-    

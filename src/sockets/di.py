@@ -6,7 +6,10 @@ from logger import Logger
 
 
 class SocketsManagerModule(Module):
+
     @singleton
     @provider
-    def provide_sockets_manager(self, settings: Settings, logger: Logger) -> SocketsManager:
+    def provide_sockets_manager(
+        self, settings: Settings, logger: Logger
+    ) -> SocketsManager:
         return RealSocketsManager(settings.sockets, logger)
