@@ -38,7 +38,6 @@ class RealSocketsManager(SocketsManager, AbstractContextManager):
     >>>     async for attack in AsyncIteratorObserver(stream):
     >>>         print(attack)
     """
-
     @inject
     def __init__(self, sockets: list[Socket], logger: Logger) -> None:
         self.sockets = sockets
@@ -61,7 +60,9 @@ class RealSocketsManager(SocketsManager, AbstractContextManager):
             writer.close()
             await writer.wait_closed()
 
-        server = await asyncio.start_server(handle_data, socket.ip, socket.port)
+        server = await asyncio.start_server(
+            handle_data, socket.ip, socket.port
+        )
 
         async with server:
             await server.serve_forever()

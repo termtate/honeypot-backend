@@ -4,7 +4,6 @@ from loguru._logger import Logger
 
 
 class LoggerModule(Module):
-
     @singleton
     @provider
     def provide_logger(self) -> Logger:
@@ -13,4 +12,4 @@ class LoggerModule(Module):
             retention="1 week",  # 保留最新一周数据
             rotation="10 MB"  # 超过10mb创建新文件
         )
-        return logger
+        return logger  # type: ignore

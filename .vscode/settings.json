@@ -1,9 +1,6 @@
 {
     "python.analysis.typeCheckingMode": "basic",
     "python.formatting.provider": "yapf",
-    "python.formatting.yapfArgs": [
-        "--style={based_on_style=pep8, arithmetic_precedence_indication=True, column_limit=79, coalesce_brackets=True, dedent_closing_brackets=True}"
-    ],
     "editor.formatOnSave": true,
     "editor.defaultFormatter": "ms-python.python",
     "[ignore]": {

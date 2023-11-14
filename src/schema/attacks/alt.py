@@ -19,8 +19,8 @@ class AttackValidator(ABC):
 
 
 Time = Annotated[
-    datetime, BeforeValidator(lambda s: datetime.strptime(s, "%Y-%m-%d-%H-%M-%S-%f"))
-]
+    datetime,
+    BeforeValidator(lambda s: datetime.strptime(s, "%Y-%m-%d-%H-%M-%S-%f"))]
 
 
 class Validator1(AttackValidator, BaseXmlModel, tag="Root"):
@@ -37,7 +37,11 @@ class Validator1(AttackValidator, BaseXmlModel, tag="Root"):
     source_ip: str = element(tag="ip_src")
     dest_ip: str = element(tag="ip_dst")
 
-    honeypot_type: ClassVar[Mapping[int, str]] = {1: "ICMP", 6: "TCP", 17: "UDP"}
+    honeypot_type: ClassVar[Mapping[int, str]] = {
+        1: "ICMP",
+        6: "TCP",
+        17: "UDP"
+    }
 
     @override
     @classmethod

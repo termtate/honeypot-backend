@@ -17,9 +17,6 @@ dependencies = [
     "pydantic-xml>=2.3.0",
     "loguru>=0.7.2",
     "aioreactive>=0.16.0",
-    "yapf>=0.40.2",
-    "ruff>=0.1.5",
-    "pre-commit>=3.5.0",
 ]
 readme = "README.md"
 requires-python = ">= 3.10"
@@ -31,13 +28,27 @@ build-backend = "hatchling.build"
 [tool.ruff]
 ignore-init-module-imports = true
 
+[tool.yapf]
+based_on_style = "pep8"
+arithmetic_precedence_indication = true
+coalesce_brackets = true
+dedent_closing_brackets = true
+BLANK_LINE_BEFORE_NESTED_CLASS_OR_DEF = false
+
 [tool.rye]
 managed = true
-dev-dependencies = []
+dev-dependencies = [
+    "ruff>=0.1.5",
+    "yapf>=0.40.2",
+    "pre-commit>=3.5.0",
+]
 
 [tool.rye.scripts]
 server = { cmd = "python -m uvicorn src.main:app --host 127.0.0.1 --port 8000", env = { PYTHONPATH = "./src/"} }
 test-server = { cmd = "python -m uvicorn src.test_main:app --host 127.0.0.1 --port 8000", env = { PYTHONPATH = "./src/"} }
+lint = { chain = [ "lint:ruff", "lint:yapf" ] }
+"lint:ruff" = "ruff check src --fix"
+"lint:yapf" = "yapf -i -r src"
 
 [tool.hatch.metadata]
 allow-direct-references = true
