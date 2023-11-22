@@ -80,6 +80,9 @@ class RealSocketsManager(SocketsManager, AbstractContextManager):
             asyncio.create_task(self._read_data_forever(socket))
             for socket in self.sockets
         ]
+        self.logger.info(
+            f"sockets listening on {[(f'addr={socket.ip}', f'port={socket.port}') for socket in self.sockets]}"
+        )
 
     @override
     def get_attack_stream(self):
