@@ -1,7 +1,5 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from datetime import datetime
-from typing import Annotated
-from pydantic.networks import IPvAnyAddress
 
 
 class Attack(BaseModel):
@@ -9,10 +7,10 @@ class Attack(BaseModel):
     单次攻击的信息
     """
     time: datetime
-    source_ip: Annotated[str, IPvAnyAddress]
-    source_port: str | int
-    dest_ip: Annotated[str, IPvAnyAddress]
-    dest_port: str | int
+    source_ip: str
+    source_port: int
+    dest_ip: str
+    dest_port: int
     transport_protocol: str
     honeypot_type: str
     attack_info: str
@@ -20,3 +18,5 @@ class Attack(BaseModel):
     warning_info: str
     warning_level: int
     content: str
+
+    model_config = ConfigDict(from_attributes=True)

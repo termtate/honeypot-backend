@@ -1,5 +1,5 @@
 from injector import singleton, provider, Module
-from sockets.manager import RealSocketsManager, SocketsManager
+from .manager import RealSocketsManager, SocketsManager
 from core import Settings
 from logger import Logger
 

@@ -1,16 +1,17 @@
 from abc import ABC, abstractmethod
-from schema import Attack, Socket
+from schema import Attack, Socket, AttackStream
 import asyncio
 from injector import inject
 from typing_extensions import override
 from logger import Logger
-from aioreactive import AsyncSubject, AsyncObservable
+from aioreactive import AsyncSubject
 from contextlib import AbstractContextManager
+from pydantic import ValidationError
 
 
 class SocketsManager(ABC):
     @abstractmethod
-    def get_attack_stream(self) -> AsyncObservable[Attack]:
+    def get_attack_stream(self) -> AttackStream:
         pass
 
     @abstractmethod
@@ -46,16 +47,21 @@ class RealSocketsManager(SocketsManager, AbstractContextManager):
         self._tasks: list[asyncio.Task]
 
     async def _read_data_forever(self, socket: Socket):
+        # https://docs.python.org/zh-cn/3.10/library/asyncio-stream.html#tcp-echo-server-using-streams
         async def handle_data(
             reader: asyncio.StreamReader, writer: asyncio.StreamWriter
         ):
             data = await reader.read()
             addr = writer.get_extra_info("peername")
-            self.logger.info(f"received {data!r} on {addr}")
+            self.logger.info(f"received {data} on {addr}")
 
-            attack = socket.attack_validator.validate(data).to_attack()
-
-            await self.stream.asend(attack)
+            try:
+                attack = socket.attack_validator.validate(data).to_attack()
+                await self.stream.asend(attack)
+            except ValidationError as e:
+                self.logger.warning(
+                    f"{data} error: {e.json(indent=2, include_url=False)}"
+                )
 
             writer.close()
             await writer.wait_closed()

@@ -1,5 +1,4 @@
 from schema import Attack
-from asyncio import Queue
 import asyncio
 from datetime import datetime
 from sockets.manager import SocketsManager
@@ -7,6 +6,8 @@ from typing_extensions import override
 from random import choice
 from faker import Faker
 from faker.providers import internet
+from aioreactive import AsyncSubject
+from sockets.manager import AttackStream
 
 faker = Faker()
 faker.add_provider(internet)
@@ -32,13 +33,13 @@ def _generate_fake_attack():
 # @singleton
 class FakeSocketsManager(SocketsManager):
     def __init__(self) -> None:
-        self.message_queue = Queue[Attack](maxsize=10)
+        self.stream = AsyncSubject[Attack]()
         self.tasks: list[asyncio.Task] | None = None
 
     async def _send_fake_data_forever(self, interval: int):
         while True:
             await asyncio.sleep(interval)
-            await self.message_queue.put(_generate_fake_attack())
+            await self.stream.asend(_generate_fake_attack())
 
     @override
     def open_connections(self) -> None:
@@ -48,8 +49,8 @@ class FakeSocketsManager(SocketsManager):
         ]
 
     @override
-    async def get_attack_info(self) -> Attack:
-        return await self.message_queue.get()
+    def get_attack_stream(self) -> AttackStream:
+        return self.stream
 
     @override
     def close_connections(self) -> None:

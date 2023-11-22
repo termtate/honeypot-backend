@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import Annotated, ClassVar, Mapping
 from pydantic_xml import BaseXmlModel, element
 from pydantic.functional_validators import BeforeValidator
-from schema import Attack
+from .attack import Attack
 from abc import ABC, abstractmethod
 from typing_extensions import override, Self
 
@@ -29,15 +29,15 @@ class Validator1(AttackValidator, BaseXmlModel, tag="Root"):
     subtype: int = element(tag="SubType")
     time: Time = element(tag="Time")
     protocol: int = element(tag="Proto")
-    source_port: str = element(tag="sPort")
-    dest_port: str = element(tag="dPort")
+    source_port: int = element(tag="sPort")
+    dest_port: int = element(tag="dPort")
     connection_begin_time: Time = element(tag="ConnectBeginTime")
     time_stamp: int = element(tag="receiveTime")
     pack_length: int = element(tag="PacketLen")
     source_ip: str = element(tag="ip_src")
     dest_ip: str = element(tag="ip_dst")
 
-    honeypot_type: ClassVar[Mapping[int, str]] = {
+    protocol_type: ClassVar[Mapping[int, str]] = {
         1: "ICMP",
         6: "TCP",
         17: "UDP"
@@ -56,7 +56,7 @@ class Validator1(AttackValidator, BaseXmlModel, tag="Root"):
             source_port=self.source_port,
             dest_ip=self.dest_ip,
             dest_port=self.dest_port,
-            transport_protocol=self.honeypot_type[self.protocol],
+            transport_protocol=self.protocol_type[self.protocol],
             honeypot_type=str(self.alert_type),
             attack_info="",
             source_address="",

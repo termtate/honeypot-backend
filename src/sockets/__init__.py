@@ -1,2 +1,2 @@
-from sockets.di import SocketsManagerModule as SocketsManagerModule
-from sockets.manager import SocketsManager as SocketsManager
+from .di import SocketsManagerModule as SocketsManagerModule
+from .manager import SocketsManager as SocketsManager

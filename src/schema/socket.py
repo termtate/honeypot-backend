@@ -1,4 +1,4 @@
-from schema.attacks.alt import AttackValidator
+from .attacks.alt import AttackValidator
 from pydantic import BaseModel
 from typing import Type
 

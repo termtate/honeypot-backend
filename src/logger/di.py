@@ -7,6 +7,7 @@ class LoggerModule(Module):
     @singleton
     @provider
     def provide_logger(self) -> Logger:
+        # https://loguru.readthedocs.io/en/stable/api/logger.html#loguru._logger.Logger.add
         logger.add(
             "log/received.log",
             retention="1 week",  # 保留最新一周数据
