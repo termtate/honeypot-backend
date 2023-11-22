@@ -6,6 +6,7 @@ All Async Web App with Fastapi + SQLAlchemy 2.0 + Injector + aioreactive
 ## before run
 
 install [rye](https://rye-up.com/guide/installation/)
+install postgresql
 
 
 ## run project
@@ -14,6 +15,7 @@ install [rye](https://rye-up.com/guide/installation/)
 2. `rye run python src/create_tables.py`（创建数据库表）（第一次运行项目时输入）
 3. `rye run python src/pre_start.py`（测试数据库连接）
 4. `rye run server` 运行服务器
+5. http://127.0.0.1:8000/docs 查看openapi文档
 
 
 ## develop
