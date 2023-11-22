@@ -11,8 +11,9 @@ install [rye](https://rye-up.com/guide/installation/)
 ## run project
 
 1. `rye sync`（第一次运行项目时输入）
-2. `rye run test_server` 运行测试（模拟数据）服务器
-3. `rye run server` 运行服务器
+2. `rye run python src/create_tables.py`（创建数据库表）（第一次运行项目时输入）
+3. `rye run python src/pre_start.py`（测试数据库连接）
+4. `rye run server` 运行服务器
 
 
 ## develop
