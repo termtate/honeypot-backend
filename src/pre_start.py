@@ -13,8 +13,8 @@ async def main(engine: AsyncEngine, logger: Logger):
     logger.debug("start connecting database")
     async with engine.begin() as conn:
         logger.debug("database connected")
-        res = await conn.execute(select(Attack))
-        logger.debug(f"statement executed: {res.one_or_none()=}")
+        await conn.execute(select(Attack))
+        logger.debug("statement executed")
     logger.debug("database disconnected")
 
 
