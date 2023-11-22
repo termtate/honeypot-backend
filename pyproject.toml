@@ -7,7 +7,6 @@ authors = [
 ]
 dependencies = [
     "fastapi>=0.103.2",
-    "pydantic>=2.4.2",
     "injector>=0.21.0",
     "pydantic-settings>=2.0.3",
     "uvicorn>=0.23.2",
@@ -17,6 +16,9 @@ dependencies = [
     "pydantic-xml>=2.3.0",
     "loguru>=0.7.2",
     "aioreactive>=0.16.0",
+    "sqlalchemy>=2.0.23",
+    "asyncpg>=0.28.0",
+    "pydantic>=2.4.2",
 ]
 readme = "README.md"
 requires-python = ">= 3.10"
@@ -27,6 +29,7 @@ build-backend = "hatchling.build"
 
 [tool.ruff]
 ignore-init-module-imports = true
+line-length = 79
 
 [tool.yapf]
 based_on_style = "pep8"
@@ -34,6 +37,8 @@ arithmetic_precedence_indication = true
 coalesce_brackets = true
 dedent_closing_brackets = true
 BLANK_LINE_BEFORE_NESTED_CLASS_OR_DEF = false
+SPLIT_BEFORE_FIRST_ARGUMENT = true
+COLUMN_LIMIT = 79
 
 [tool.rye]
 managed = true
@@ -53,6 +58,6 @@ lint = { chain = [ "lint:ruff", "lint:yapf" ] }
 [tool.hatch.metadata]
 allow-direct-references = true
 
-[[sources]]
-name = "default"
-url = "https://mirror.baidu.com/pypi/simple"
+# [[tool.rye.sources]]
+# name = "default"
+# url = "https://mirror.baidu.com/pypi/simple"

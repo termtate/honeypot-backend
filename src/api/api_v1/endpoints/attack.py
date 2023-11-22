@@ -1,6 +1,8 @@
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 from fastapi_injector import Injected
 from websocket import WebSocketManager
+from schema import Attack
+from db import CRUDAttack
 
 router = APIRouter()
 
@@ -20,3 +22,12 @@ async def send_attack_info(
             await websocket.receive_text()
     except WebSocketDisconnect:
         websocket_manager.remove(websocket)
+
+
+@router.get("/", response_model=list[Attack])
+async def get_attacks(
+    offset: int = 0,
+    limit: int = 10,
+    crud_attack: CRUDAttack = Injected(CRUDAttack)
+) -> list[Attack]:
+    return [attack async for attack in crud_attack.get(offset, limit)]
