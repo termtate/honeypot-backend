@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import Annotated, ClassVar, Mapping
 from pydantic_xml import BaseXmlModel, element
 from pydantic.functional_validators import BeforeValidator
-from .attack import Attack
+from .attack import AttackSchema
 from abc import ABC, abstractmethod
 from typing_extensions import override, Self
 
@@ -14,7 +14,7 @@ class AttackValidator(ABC):
         pass
 
     @abstractmethod
-    def to_attack(self) -> Attack:
+    def to_attack(self) -> AttackSchema:
         pass
 
 
@@ -49,8 +49,8 @@ class Validator1(AttackValidator, BaseXmlModel, tag="Root"):
         return cls.from_xml(content)
 
     @override
-    def to_attack(self) -> Attack:
-        return Attack(
+    def to_attack(self) -> AttackSchema:
+        return AttackSchema(
             time=self.time,
             source_ip=self.source_ip,
             source_port=self.source_port,

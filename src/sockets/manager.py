@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from schema import Attack, Socket, AttackStream
+from schema import AttackSchema, Socket, AttackStream
 import asyncio
 from injector import inject
 from typing_extensions import override
@@ -42,7 +42,7 @@ class RealSocketsManager(SocketsManager, AbstractContextManager):
     @inject
     def __init__(self, sockets: list[Socket], logger: Logger) -> None:
         self.sockets = sockets
-        self.stream = AsyncSubject[Attack]()
+        self.stream = AsyncSubject[AttackSchema]()
         self.logger = logger
         self._tasks: list[asyncio.Task]
 
@@ -60,7 +60,7 @@ class RealSocketsManager(SocketsManager, AbstractContextManager):
                 await self.stream.asend(attack)
             except ValidationError as e:
                 self.logger.warning(
-                    f"{data} error: {e.json(indent=2, include_url=False)}"
+                    f"{data} validate error: {e.json(indent=2, include_url=False)}"
                 )
 
             writer.close()

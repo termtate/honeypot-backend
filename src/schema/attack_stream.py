@@ -1,5 +1,5 @@
 from typing import TypeAlias
-from .attacks.attack import Attack
+from .attacks.attack import AttackSchema
 from aioreactive import AsyncObservable
 
-AttackStream: TypeAlias = AsyncObservable[Attack]
+AttackStream: TypeAlias = AsyncObservable[AttackSchema]

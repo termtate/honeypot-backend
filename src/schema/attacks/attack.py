@@ -2,7 +2,7 @@ from pydantic import BaseModel, ConfigDict
 from datetime import datetime
 
 
-class Attack(BaseModel):
+class AttackSchema(BaseModel):
     """
     单次攻击的信息
     """

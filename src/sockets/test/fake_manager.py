@@ -1,4 +1,4 @@
-from schema import Attack
+from schema import AttackSchema
 import asyncio
 from datetime import datetime
 from sockets.manager import SocketsManager
@@ -14,7 +14,7 @@ faker.add_provider(internet)
 
 
 def _generate_fake_attack():
-    return Attack(
+    return AttackSchema(
         time=datetime.now(),
         source_ip=faker.ipv4(),
         source_port=faker.port_number(),
@@ -33,7 +33,7 @@ def _generate_fake_attack():
 # @singleton
 class FakeSocketsManager(SocketsManager):
     def __init__(self) -> None:
-        self.stream = AsyncSubject[Attack]()
+        self.stream = AsyncSubject[AttackSchema]()
         self.tasks: list[asyncio.Task] | None = None
 
     async def _send_fake_data_forever(self, interval: int):

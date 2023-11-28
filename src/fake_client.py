@@ -11,7 +11,7 @@ async def send():
         <Proto>1</Proto>
         <sPort>8888</sPort>
         <dPort>8112</dPort>
-        <ConnectBeginTime>2022-01-01-00-00-00-00</ConnectBeginTime>
+        <ConnectBeginTime>2023-01-01-00-00-00-00</ConnectBeginTime>
         <receiveTime>1</receiveTime>
         <PacketLen>1</PacketLen>
         <ip_src>0.0.0.0</ip_src>
