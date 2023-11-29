@@ -1,10 +1,6 @@
 from injector import singleton, provider, Module
 from core import Settings
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine, AsyncSession, AsyncEngine
-from .crud.generate import generate_crud
-from db.models import Attack
-from schema import AttackSchema
-from db.crud import CRUDAttack
 
 
 class DBModule(Module):
@@ -27,10 +23,3 @@ class DBModule(Module):
             # autoflush=False,
             future=True,
         )
-
-    @singleton
-    @provider
-    def provide_attack_crud(
-        self, session: async_sessionmaker[AsyncSession]
-    ) -> CRUDAttack:
-        return generate_crud(AttackSchema, Attack)(session)

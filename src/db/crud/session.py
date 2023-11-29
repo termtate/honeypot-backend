@@ -1,17 +1,18 @@
 from sqlalchemy.ext.asyncio import async_sessionmaker, AsyncSession
-from typing import AsyncIterator, Callable, TypeVar, Concatenate, ParamSpec, Awaitable, overload
-from injector import inject, singleton
+from typing import AsyncIterator, Callable, TypeVar, Concatenate, ParamSpec, Awaitable, overload, Protocol
+from .base import Base
+from pydantic import BaseModel
 
 T = TypeVar("T")
-TMixin = TypeVar("TMixin", bound="SessionMixin")
+TMixin = TypeVar("TMixin", bound="CRUDMixin")
 P = ParamSpec("P")
 
 
-@singleton
-class SessionMixin:
-    @inject
-    def __init__(self, session: async_sessionmaker[AsyncSession]) -> None:
-        self.session = session
+class CRUDMixin(Protocol):
+    """
+    混入CRUD类中，能够给CRUD类增添with_session装饰器
+    """
+    session: async_sessionmaker[AsyncSession]
 
     @staticmethod
     @overload
@@ -39,3 +40,25 @@ class SessionMixin:
                 return await res if isinstance(res, Awaitable) else res
 
         return wrapper
+
+
+_TS = TypeVar("_TS", bound=BaseModel, contravariant=True)
+_TM = TypeVar("_TM", bound=Base, covariant=True)
+
+
+class CRUDSession(Protocol[_TS, _TM]):
+    """
+    把CRUDBase里方法的session参数去掉以后的接口
+    """
+    async def get(
+        self,
+        offset: int | None = None,
+        limit: int | None = None,
+    ) -> AsyncIterator[_TM]:
+        ...
+
+    async def get_by_id(self, id: int) -> _TM | None:
+        ...
+
+    async def create(self, schema: _TS) -> _TM:
+        ...

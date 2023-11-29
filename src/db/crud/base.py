@@ -1,34 +1,16 @@
-from abc import abstractmethod, ABC
-from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 from sqlalchemy import select
-from typing import AsyncIterator, Type, TypeVar, Generic
+from typing import AsyncIterator, ClassVar, Type, TypeVar, Generic, Protocol
 from pydantic import BaseModel
 from db.models.base import Base
+from .session import CRUDMixin, CRUDSession
 
-TSchema = TypeVar("TSchema", bound=BaseModel)
-TModel = TypeVar("TModel", bound=Base)
-
-
-class CRUD(ABC, Generic[TSchema, TModel]):
-    @abstractmethod
-    async def get(
-        self,
-        session: AsyncSession,
-        offset: int | None = None,
-        limit: int | None = None,
-    ) -> AsyncIterator[TModel]:
-        pass
-
-    @abstractmethod
-    async def get_by_id(self, session: AsyncSession, id: int) -> TModel | None:
-        pass
-
-    @abstractmethod
-    async def create(self, session: AsyncSession, schema: TSchema) -> TModel:
-        pass
+TSchema = TypeVar("TSchema", bound=BaseModel, contravariant=True)
+TModel = TypeVar("TModel", bound=Base, covariant=True)
 
 
-class CRUDBase(CRUD[TSchema, TModel]):
+class CRUDBase(Generic[TSchema, TModel]):
+    """增删改查的基本实现"""
     def __init__(self, model: Type[TModel]) -> None:
         self.model = model
 
@@ -57,3 +39,28 @@ class CRUDBase(CRUD[TSchema, TModel]):
         new = await self.get_by_id(session, a.id)
         assert new is not None
         return new
+
+
+class CRUDWithSession(CRUDSession[TSchema, TModel], CRUDMixin, Protocol):
+    """
+    把`CRUDBase`方法中的session参数提到了构造函数中
+    """
+    crud: ClassVar[CRUDBase]
+    session: async_sessionmaker[AsyncSession]
+
+    @CRUDMixin.with_session
+    def get(
+        self,
+        session: AsyncSession,
+        offset: int | None = None,
+        limit: int | None = None,
+    ) -> AsyncIterator[TModel]:
+        return self.crud.get(session, offset, limit)
+
+    @CRUDMixin.with_session
+    async def get_by_id(self, session: AsyncSession, id: int) -> TModel | None:
+        return await self.crud.get_by_id(session, id)
+
+    @CRUDMixin.with_session
+    async def create(self, session, schema: TSchema) -> TModel:
+        return await self.crud.create(session, schema)
