@@ -20,7 +20,7 @@ exceptiongroup==1.1.3
 expression==2.2.0
 faker==19.11.0
 fastapi==0.103.2
-fastapi-injector==0.5.1
+fastapi-injector==0.5.3
 filelock==3.13.1
 greenlet==3.0.1
 h11==0.14.0

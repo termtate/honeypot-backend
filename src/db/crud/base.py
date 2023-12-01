@@ -1,9 +1,9 @@
-from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from typing import AsyncIterator, ClassVar, Type, TypeVar, Generic, Protocol
 from pydantic import BaseModel
 from db.models.base import Base
-from .session import CRUDMixin, CRUDSession
+from .session import CRUDSession
 
 TSchema = TypeVar("TSchema", bound=BaseModel, contravariant=True)
 TModel = TypeVar("TModel", bound=Base, covariant=True)
@@ -41,26 +41,22 @@ class CRUDBase(Generic[TSchema, TModel]):
         return new
 
 
-class CRUDWithSession(CRUDSession[TSchema, TModel], CRUDMixin, Protocol):
+class CRUDWithSession(CRUDSession[TSchema, TModel], Protocol):
     """
     把`CRUDBase`方法中的session参数提到了构造函数中
     """
     crud: ClassVar[CRUDBase]
-    session: async_sessionmaker[AsyncSession]
+    session: AsyncSession
 
-    @CRUDMixin.with_session
     def get(
         self,
-        session: AsyncSession,
         offset: int | None = None,
         limit: int | None = None,
     ) -> AsyncIterator[TModel]:
-        return self.crud.get(session, offset, limit)
+        return self.crud.get(self.session, offset, limit)
 
-    @CRUDMixin.with_session
-    async def get_by_id(self, session: AsyncSession, id: int) -> TModel | None:
-        return await self.crud.get_by_id(session, id)
+    async def get_by_id(self, id: int) -> TModel | None:
+        return await self.crud.get_by_id(self.session, id)
 
-    @CRUDMixin.with_session
-    async def create(self, session, schema: TSchema) -> TModel:
-        return await self.crud.create(session, schema)
+    async def create(self, schema: TSchema) -> TModel:
+        return await self.crud.create(self.session, schema)

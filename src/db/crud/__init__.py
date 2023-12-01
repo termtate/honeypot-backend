@@ -1,1 +1,1 @@
-from .attack import CRUDAttack as CRUDAttack
+from .base import CRUDWithSession as CRUDWithSession, CRUDBase as CRUDBase

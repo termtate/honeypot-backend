@@ -1,27 +1,23 @@
-import asyncio
 from fastapi import FastAPI
 from contextlib import asynccontextmanager
-from sockets.manager import SocketsManager
 from injector import Injector
-from sockets.di import SocketsManagerModule
 from core import Settings
-from api.api_v1.api import api_router
-from fastapi_injector import attach_injector
+from feature.api import api_router
+from fastapi_injector import attach_injector, InjectorMiddleware, RequestScopeOptions
 from logger import LoggerModule
-from db import store_attacks_to_db, DBModule
+from db import DBModule
+from feature import LifespanScope, start_startup_events
 
 
 # https://fastapi.tiangolo.com/zh/advanced/events/#lifespan
 @asynccontextmanager
 async def lifespan(app: FastAPI, injector: Injector):
-    sockets_manager = injector.get(SocketsManager)
-    # https://stackoverflow.com/questions/76142431/how-to-run-another-application-within-the-same-running-event-loop
-    sockets_manager.open_connections()
-    asyncio.create_task(injector.call_with_injection(store_attacks_to_db))
+    scope = injector.get(LifespanScope)
+    start_startup_events(injector)
 
     yield
 
-    sockets_manager.close_connections()
+    await scope.aclose()
 
 
 # https://github.com/matyasrichter/fastapi-injector#usage
@@ -30,11 +26,11 @@ def make_app(injector: Injector) -> FastAPI:
 
     settings = injector.get(Settings)
     app.include_router(api_router, prefix=settings.API_V1_STR)
-    attach_injector(app, injector)
+    app.add_middleware(InjectorMiddleware, injector=injector)
+    attach_injector(app, injector, RequestScopeOptions(enable_cleanup=True))
     return app
 
 
 # https://injector.readthedocs.io/en/latest/terminology.html#injector
-injector = Injector([SocketsManagerModule(), LoggerModule(), DBModule()])
-
+injector = Injector([LoggerModule(), DBModule()])
 app = make_app(injector)

@@ -2,7 +2,7 @@ import asyncio
 from injector import Injector, inject
 from sqlalchemy.ext.asyncio import AsyncEngine
 from logger import Logger
-from src.db.models.base import Base
+from db.models.base import Base
 from db import DBModule
 from logger import LoggerModule
 

@@ -4,10 +4,10 @@ import asyncio
 async def send():
     _, writer = await asyncio.open_connection("localhost", 8123)
     message = '''<Root>
-        <SYMBOL>1</SYMBOL>
+        <SYMBOL>20</SYMBOL>
         <AlertType>1</AlertType>
         <SubType>1</SubType>
-        <Time>2022-01-01-00-00-00-00</Time>
+        <Time>2023-01-01-00-00-00-00</Time>
         <Proto>1</Proto>
         <sPort>8888</sPort>
         <dPort>8112</dPort>
