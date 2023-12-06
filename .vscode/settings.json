@@ -6,4 +6,7 @@
     "[ignore]": {
         "editor.defaultFormatter": "foxundermoon.shell-format"
     },
+    "[markdown]": {
+        "editor.defaultFormatter": "yzhang.markdown-all-in-one"
+    },
 }

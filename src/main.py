@@ -6,14 +6,14 @@ from feature.api import api_router
 from fastapi_injector import attach_injector, InjectorMiddleware, RequestScopeOptions
 from logger import LoggerModule
 from db import DBModule
-from feature import LifespanScope, start_startup_events
+from feature import LifespanScope, lifespan_scope
 
 
 # https://fastapi.tiangolo.com/zh/advanced/events/#lifespan
 @asynccontextmanager
 async def lifespan(app: FastAPI, injector: Injector):
     scope = injector.get(LifespanScope)
-    start_startup_events(injector)
+    lifespan_scope.start_startup_events(injector)
 
     yield
 

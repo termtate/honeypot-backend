@@ -1,16 +1,13 @@
-from ..utils import WebsocketManager
+from ..utils import WebsocketManager, inject_constructor
 from .schema import AttackSchema
-from fastapi_injector import request_scope
-from dataclasses import dataclass
-from injector import inject
+from injector import singleton
 from .source import HoneydSource
 from logger import Logger
 from core import Settings
 
 
-@request_scope
-@inject
-@dataclass
+@singleton
+@inject_constructor
 class HoneydWebsocket(WebsocketManager[AttackSchema]):
     source: HoneydSource
     logger: Logger

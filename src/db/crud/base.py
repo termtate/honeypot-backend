@@ -1,11 +1,11 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from typing import AsyncIterator, ClassVar, Type, TypeVar, Generic, Protocol
-from pydantic import BaseModel
 from db.models.base import Base
 from .session import CRUDSession
+from schema.base import Schema
 
-TSchema = TypeVar("TSchema", bound=BaseModel, contravariant=True)
+TSchema = TypeVar("TSchema", bound=Schema, contravariant=True)
 TModel = TypeVar("TModel", bound=Base, covariant=True)
 
 

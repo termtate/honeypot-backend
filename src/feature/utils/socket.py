@@ -59,8 +59,7 @@ class SocketSource(DataSource[TS], Protocol[TS]):
     用法：
     
     >>> @lifespan_scope
-    >>> @inject
-    >>> @dataclass
+    >>> @inject_constructor
     >>> class MySource(SocketSource[MySchema]):
     >>>     schema = MySchema
     >>>     socket = Socket(ip=..., port=...)

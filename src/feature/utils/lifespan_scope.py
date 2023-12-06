@@ -1,7 +1,7 @@
 import asyncio
 import threading
-from typing import Any, Type, cast
-from injector import Provider, Scope, InstanceProvider, Binding
+from typing import Any, Awaitable, Callable, Type, cast
+from injector import Injector, Provider, Scope, InstanceProvider, Binding
 from contextlib import AbstractContextManager, AsyncExitStack, AbstractAsyncContextManager
 from typing import TypeVar
 
@@ -19,6 +19,8 @@ class LifespanScope(Scope):
     """
     stack: AsyncExitStack
     context: dict[Type, Any]
+    _loop: asyncio.AbstractEventLoop
+    _thr: threading.Thread
 
     def configure(self) -> None:
         self.stack = AsyncExitStack()
@@ -26,14 +28,12 @@ class LifespanScope(Scope):
         self._loop = asyncio.new_event_loop()
         self._thr = threading.Thread(
             target=self._loop.run_forever,
-            # name="fastapi-injector-enter-context",
+            name="fastapi-injector-lifespan-context",
             daemon=True,
         )
 
     def get(self, key: Type[T], provider: Provider[T]) -> Provider[T]:
-        """
-        仿照injector.singleton和fastapi_injector.request_scope实现
-        """
+        # 仿照injector.singleton和fastapi_injector.request_scope实现
         if key in self.context:
             dep = self.context[key]
         else:
@@ -76,17 +76,37 @@ class LifespanScope(Scope):
         await self.stack.aclose()
 
 
-def lifespan_scope(cls: Type[T]) -> Type[T]:
-    """
-    LifespanScope的类装饰器
-    """
-    cast(Any, cls).__scope__ = LifespanScope
-    if binding := getattr(cls, "__binding__", None):
-        new_binding = Binding(
-            interface=binding.interface,
-            provider=binding.provider,
-            scope=LifespanScope
-        )
-        setattr(cls, "__binding__", new_binding)
+StartupEvent = Callable[[Injector], Awaitable[Any]]
 
-    return cls
+
+class LifespanScopeDecorator:
+    def __init__(self) -> None:
+        self.startup_events: set[StartupEvent] = set()
+
+    def __call__(self, cls: Type[T]) -> Type[T]:
+        """
+        LifespanScope的类装饰器
+        """
+        cast(Any, cls).__scope__ = LifespanScope
+        if binding := getattr(cls, "__binding__", None):
+            new_binding = Binding(
+                interface=binding.interface,
+                provider=binding.provider,
+                scope=LifespanScope
+            )
+            setattr(cls, "__binding__", new_binding)
+
+        return cls
+
+    async def _start_startup_events(self, injector):
+        await asyncio.gather(*[func(injector) for func in self.startup_events])
+
+    def start_startup_events(self, injector: Injector):
+        asyncio.create_task(self._start_startup_events(injector))
+
+    def on_startup(self, func: StartupEvent) -> StartupEvent:
+        self.startup_events.add(func)
+        return func
+
+
+lifespan_scope = LifespanScopeDecorator()

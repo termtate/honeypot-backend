@@ -14,7 +14,7 @@ class DataSource(AbstractContextManager, Protocol[T]):
     task: asyncio.Task | None = None
     logger: Logger
 
-    async def receive_data_forver(self):
+    async def receive_data_forever(self):
         """
         循环接收数据，在方法中调用self.stream.asend()将数据保存到流中
         """
@@ -25,7 +25,7 @@ class DataSource(AbstractContextManager, Protocol[T]):
         return self.stream.asend(self.schema.from_str(content))
 
     def open_connection(self):
-        self.task = asyncio.create_task(self.receive_data_forver())
+        self.task = asyncio.create_task(self.receive_data_forever())
 
     def close_connection(self):
         assert self.task is not None, "还未打开连接"

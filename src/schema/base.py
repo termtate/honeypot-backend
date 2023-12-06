@@ -1,4 +1,4 @@
-from typing import Protocol
+from typing import Any, Protocol
 from typing_extensions import Self
 
 
@@ -8,4 +8,7 @@ class Schema(Protocol):
         ...
 
     def model_dump_json(self) -> str:
+        ...
+
+    def model_dump(self) -> dict[str, Any]:
         ...

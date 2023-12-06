@@ -52,6 +52,29 @@ def buffer(interval: int):
 
 
 class WebsocketManager(Protocol[T]):
+    """
+    1. 继承这个类
+    >>> @singleton
+    >>> @inject
+    >>> @dataclass
+    >>> class MyWebsocketManager(WebsocketManager[MySchema]):
+    >>>     source: MySource
+    >>>     logger: Logger
+    >>>     setting: Settings
+    
+    2. 在ws端口中使用
+    >>> @router.websocket("/ws")
+    >>> async def endpoint(
+    ...     websocket: WebSocket,
+    ...     subscribe: MyWebsocketManager = Injected(MyWebsocketManager)
+    ... ):
+    >>>     await websocket.accept()
+    ...
+    >>>     with subscribe(websocket):
+    >>>         with contextlib.suppress(WebSocketDisconnect):
+    >>>             while True:
+    >>>                 await websocket.receive_text()
+    """
     source: DataSource[T]
     logger: Logger
     setting: Settings
