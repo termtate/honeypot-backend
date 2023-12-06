@@ -28,7 +28,13 @@ class DBModule(Module):
 
     @request_scope
     @provider
-    def provide_db_session(
+    def provide_db_session_context_manager(
         self, session_maker: async_sessionmaker[AsyncSession]
     ) -> SessionContextManager:
         return SessionContextManager(session_maker())
+
+    @provider
+    def provide_db_session(
+        self, context: SessionContextManager
+    ) -> AsyncSession:
+        return context.async_session

@@ -8,8 +8,6 @@ from source.base import DataSource
 from schema.base import Schema
 from logger import Logger
 
-from db.crud.base import CRUDWithSession
-
 T = TypeVar("T")
 TException = TypeVar("TException", bound=Exception)
 P = ParamSpec("P")
@@ -56,13 +54,22 @@ TS = TypeVar("TS", bound=Schema)
 
 class SocketSource(DataSource[TS], Protocol[TS]):
     """
-    对来源是socket发送数据的DataSource的封装
+    对来源是socket发送数据的DataSource的封装   
+    
+    用法：
+    
+    >>> @lifespan_scope
+    >>> @inject
+    >>> @dataclass
+    >>> class MySource(SocketSource[MySchema]):
+    >>>     schema = MySchema
+    >>>     socket = Socket(ip=..., port=...)
+    >>>     logger: Logger
     """
     socket: ClassVar[Socket]
     logger: Logger
-    crud: CRUDWithSession
 
-    async def receive_data_forver(self):
+    async def receive_data_forever(self):
         self.logger.info(f"start listening socket on {self.socket}")
         return await start_server(
             socket=self.socket,
