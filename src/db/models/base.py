@@ -9,6 +9,9 @@ class Base(
         dataclass_callable=pydantic.dataclasses.dataclass(config=ConfigDict(
             from_attributes=True)),  # 与pydantic集成
 ):
+    """
+    数据库 orm基类
+    """
     id: Mapped[int] = mapped_column(
         autoincrement=True,
         unique=True,

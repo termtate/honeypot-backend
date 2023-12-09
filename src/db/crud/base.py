@@ -43,7 +43,13 @@ class CRUDBase(Generic[TSchema, TModel]):
 
 class CRUDWithSession(CRUDSession[TSchema, TModel], Protocol):
     """
-    把`CRUDBase`方法中的session参数提到了构造函数中
+    将`CRUDBase`的方法里的session参数提升到了构造参数，以便依赖注入
+    
+    >>> @request_scope
+    >>> @inject_constructor
+    >>> class MyCRUD(CRUDWithSession[MySchema, MyOrm]):
+    >>>     crud = CRUDBase(MyOrm)
+    >>>     session: AsyncSession
     """
     crud: ClassVar[CRUDBase]
     session: AsyncSession
