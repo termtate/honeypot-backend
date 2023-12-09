@@ -5,6 +5,8 @@ from logger import Logger
 from db.models.base import Base
 from db import DBModule
 from logger import LoggerModule
+from feature.honeyd.model import AttackOrm as honeyd_model  # noqa: F401
+from feature.conpot.model import AttackOrm as conpot_model  # noqa: F401
 
 
 @inject
