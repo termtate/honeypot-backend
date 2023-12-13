@@ -4,7 +4,7 @@ from datetime import datetime
 
 
 class AttackOrm(Base):
-    __tablename__ = "conpot"
+    __tablename__ = "honeyd"
 
     symbol: Mapped[int]
     alert_type: Mapped[int]
