@@ -3,6 +3,8 @@ from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 from fastapi_injector import Injected
 from .crud import CRUDAttack
 from .websocket import ConpotWebsocket
+from .schema import AttackSchema
+from .source import ConpotSource
 
 router = APIRouter()
 
@@ -27,3 +29,14 @@ async def get_attacks(
     crud: CRUDAttack = Injected(CRUDAttack),
 ):
     return [attack async for attack in crud.get(offset, limit)]
+
+
+@router.post("/")
+async def create_attack(
+    attack: AttackSchema,
+    source: ConpotSource = Injected(ConpotSource),
+    crud: CRUDAttack = Injected(CRUDAttack),
+):
+    new = await crud.create(attack)
+    await source.stream.asend(attack)
+    return new
