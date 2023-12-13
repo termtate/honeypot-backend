@@ -1,4 +1,4 @@
-from typing import Annotated, ClassVar, Mapping, Literal
+from typing import Annotated, Literal
 from datetime import datetime
 from pydantic import BeforeValidator, ConfigDict
 from pydantic_xml import BaseXmlModel, element
@@ -9,7 +9,11 @@ Time = Annotated[
 
 ProtocolType = Annotated[
     Literal["ICMP", "TCP", "UDP"],
-    BeforeValidator(lambda i: AttackSchema.protocol_type[i])]
+    BeforeValidator(lambda i: {
+        "1": "ICMP",
+        "6": "TCP",
+        "17": "UDP"
+    }[i])]
 
 
 class AttackSchema(BaseXmlModel, tag="Root"):
@@ -27,12 +31,6 @@ class AttackSchema(BaseXmlModel, tag="Root"):
     pack_length: int = element(tag="PacketLen")
     source_ip: str = element(tag="ip_src")
     dest_ip: str = element(tag="ip_dst")
-
-    protocol_type: ClassVar[Mapping[str, str]] = {
-        "1": "ICMP",
-        "6": "TCP",
-        "17": "UDP"
-    }
 
     @classmethod
     def from_str(cls, content):
