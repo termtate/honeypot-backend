@@ -7,6 +7,7 @@ from db import DBModule
 from logger import LoggerModule
 from feature.honeyd.model import AttackOrm as honeyd_model  # noqa: F401
 from feature.conpot.model import AttackOrm as conpot_model  # noqa: F401
+from feature.kippo.model import AttackOrm as kippo_model  # noqa: F401
 
 
 @inject
