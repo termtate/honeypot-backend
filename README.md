@@ -57,6 +57,8 @@ All Async Web App with Fastapi + SQLAlchemy 2.0 + Injector + aioreactive
 ### 单个蜜罐内的架构
 
 ![蜜罐架构示意图](images/honeypot_arch.svg)
+
+
 > source产生attack的来源也可以不只是socket，只要在内部调用`self.stream.asend()`方法把attack放入stream就可以
 
 
