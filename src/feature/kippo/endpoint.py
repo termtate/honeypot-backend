@@ -3,6 +3,7 @@ from fastapi_injector import Injected
 from .crud import CRUDAttack
 from .schema import AttackSchema
 from .source import KippoSource
+from logger import Logger
 
 router = APIRouter()
 
@@ -21,7 +22,9 @@ async def create_attack(
     attack: AttackSchema,
     source: KippoSource = Injected(KippoSource),
     crud: CRUDAttack = Injected(CRUDAttack),
+    logger: Logger = Injected(Logger)
 ):
     new = await crud.create(attack)
+    logger.info(f"created attack {new}")
     await source.stream.asend(attack)
     return new
