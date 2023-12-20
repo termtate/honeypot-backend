@@ -48,7 +48,7 @@ dev-dependencies = [
 ]
 
 [tool.rye.scripts]
-server = { cmd = "python -m uvicorn src.main:app --host 127.0.0.1 --port 8000 --lifespan on", env = { PYTHONPATH = "./src/"} }
+server = { cmd = "python -m uvicorn src.main:app --host 0.0.0.0 --port 8000 --lifespan on", env = { PYTHONPATH = "./src/"} }
 lint = { chain = [ "lint:ruff", "lint:yapf" ] }
 "lint:ruff" = "ruff check src --fix"
 "lint:yapf" = "yapf -i -r src"
