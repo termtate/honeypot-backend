@@ -1,6 +1,6 @@
 from datetime import datetime
-from typing import Literal
-from pydantic import ConfigDict, BaseModel, IPvAnyAddress
+from typing import Literal, Annotated
+from pydantic import ConfigDict, BaseModel, IPvAnyAddress, AfterValidator
 
 
 class AttackSchema(BaseModel):
@@ -10,8 +10,8 @@ class AttackSchema(BaseModel):
     protocol: Literal["ICMP", "TCP", "UDP"]
     source_port: int | None
     dest_port: int | None
-    source_ip: IPvAnyAddress
-    dest_ip: IPvAnyAddress
+    source_ip: str
+    dest_ip: str
     content: str
 
     @classmethod
