@@ -1,4 +1,5 @@
-from sqlalchemy.ext.asyncio import AsyncSession, session
+from sqlalchemy.ext.asyncio import session
+from sqlmodel.ext.asyncio.session import AsyncSession
 import asyncio
 from contextlib import suppress
 from fastapi_injector import request_scope

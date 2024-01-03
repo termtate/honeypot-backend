@@ -1,15 +1,16 @@
 from contextlib import contextmanager
 from expression import pipe
 from fastapi import WebSocket
+from pydantic import RootModel
 from source.base import DataSource
 from logger import Logger
 from core import Settings
 import aioreactive as rx
 import asyncio
 from typing import Protocol, TypeVar
-from schema.base import Schema
+from db.models import Base
 
-T = TypeVar("T", bound=Schema)
+T = TypeVar("T", bound=Base)
 
 
 def buffer(interval: int):
@@ -86,7 +87,9 @@ class WebsocketManager(Protocol[T]):
         )
 
         async for attacks in rx.AsyncIteratorObserver(buffered_stream):
-            text = str([attack.model_dump_json() for attack in attacks])
+            text = str([
+                RootModel[T](attack).model_dump_json() for attack in attacks
+            ])
             await websocket.send_text(text)
             self.logger.info(f"send attack to {websocket}")
 

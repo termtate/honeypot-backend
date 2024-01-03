@@ -5,11 +5,7 @@ from logger import Logger
 from db.models.base import Base
 from db import DBModule
 from logger import LoggerModule
-from feature.honeyd.model import AttackOrm as honeyd_model  # noqa: F401
-from feature.conpot.model import AttackOrm as conpot_model  # noqa: F401
-from feature.kippo.model import AttackOrm as kippo_model  # noqa: F401
-from feature.real_honeypot.model import AttackOrm as real_honeypot_model  # noqa: F401
-from feature.webtrap.model import AttackOrm as webtrap_model  # noqa: F401
+import feature  # noqa: F401
 
 
 @inject

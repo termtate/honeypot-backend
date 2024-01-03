@@ -2,10 +2,10 @@ import asyncio
 from aioreactive import AsyncSubject
 from contextlib import AbstractContextManager
 from typing import Protocol, Type, TypeVar
-from schema import Schema
+from db.models import Base
 from logger import Logger
 
-T = TypeVar("T", bound=Schema)
+T = TypeVar("T", bound=Base)
 
 
 class DataSource(AbstractContextManager, Protocol[T]):

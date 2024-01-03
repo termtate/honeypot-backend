@@ -6,17 +6,15 @@ from injector import Injector
 from logger import Logger
 from fastapi_injector import RequestScopeFactory
 from expression import curry_flipped
-from schema.base import Schema
 from db.models.base import Base
 
-TS = TypeVar("TS", bound=Schema)
 TM = TypeVar("TM", bound=Base)
 
 
 @curry_flipped(1)
 async def store_attack(
-    injector: Injector, source: Type[DataSource[TS]],
-    crud: Type[CRUDWithSession[TS, TM]]
+    injector: Injector, source: Type[DataSource[TM]],
+    crud: Type[CRUDWithSession[TM]]
 ):
     s = injector.get(source)
     request_scope_factory = injector.get(RequestScopeFactory)

@@ -3,10 +3,10 @@ from .base import Base
 from schema.base import Schema
 
 _TS = TypeVar("_TS", bound=Schema, contravariant=True)
-_TM = TypeVar("_TM", bound=Base, covariant=True)
+_TM = TypeVar("_TM", bound=Base)
 
 
-class CRUDSession(Protocol[_TS, _TM]):
+class CRUDSession(Protocol[_TM]):
     """
     把CRUDBase里方法的session参数去掉以后的接口
     """
@@ -20,5 +20,5 @@ class CRUDSession(Protocol[_TS, _TM]):
     async def get_by_id(self, id: int) -> _TM | None:
         ...
 
-    async def create(self, schema: _TS) -> _TM:
+    async def create(self, model: _TM) -> _TM:
         ...

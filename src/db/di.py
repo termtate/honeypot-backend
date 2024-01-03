@@ -1,6 +1,7 @@
 from injector import singleton, provider, Module
 from core import Settings
-from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine, AsyncSession, AsyncEngine
+from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine, AsyncEngine
+from sqlmodel.ext.asyncio.session import AsyncSession
 from fastapi_injector import request_scope
 from .session import SessionContextManager
 
@@ -11,7 +12,7 @@ class DBModule(Module):
     def provide_db_engine(self, settings: Settings) -> AsyncEngine:
         return create_async_engine(
             str(settings.SQLALCHEMY_DATABASE_URI),
-            pool_pre_ping=True,
+            future=True,
             # echo=settings.ECHO_SQL,
         )
 
@@ -21,9 +22,11 @@ class DBModule(Module):
         self, engine: AsyncEngine
     ) -> async_sessionmaker[AsyncSession]:
         return async_sessionmaker(
+            autocommit=False,
             bind=engine,
-            # autoflush=False,
+            autoflush=False,
             future=True,
+            class_=AsyncSession,
         )
 
     @request_scope

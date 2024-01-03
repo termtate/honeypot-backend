@@ -2,11 +2,10 @@ from fastapi import FastAPI
 from contextlib import asynccontextmanager
 from injector import Injector
 from core import Settings
-from feature.api import api_router
 from fastapi_injector import attach_injector, InjectorMiddleware, RequestScopeOptions
 from logger import LoggerModule
 from db import DBModule
-from feature import LifespanScope, lifespan_scope
+from feature import honeypot_binds, LifespanScope, lifespan_scope, api_router
 
 
 # https://fastapi.tiangolo.com/zh/advanced/events/#lifespan
@@ -32,5 +31,10 @@ def make_app(injector: Injector) -> FastAPI:
 
 
 # https://injector.readthedocs.io/en/latest/terminology.html#injector
-injector = Injector([LoggerModule(), DBModule()])
+injector = Injector([LoggerModule(), DBModule()] + honeypot_binds)
 app = make_app(injector)
+
+if __name__ == "__main__":
+    import uvicorn
+
+    uvicorn.run(app, host="0.0.0.0", port=8000)

@@ -5,8 +5,8 @@ from typing import Callable, Awaitable, Any, Protocol, Type, TypeVar, ParamSpec,
 from pydantic import ValidationError
 from expression import curry
 from source.base import DataSource
-from schema.base import Schema
 from logger import Logger
+from db.models import Base
 
 T = TypeVar("T")
 TException = TypeVar("TException", bound=Exception)
@@ -49,7 +49,7 @@ async def start_server(
         await server.serve_forever()
 
 
-TS = TypeVar("TS", bound=Schema)
+TS = TypeVar("TS", bound=Base)
 
 
 class SocketSource(DataSource[TS], Protocol[TS]):
