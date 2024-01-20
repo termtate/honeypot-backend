@@ -18,6 +18,9 @@ all_honeypots: list[Type[Honeypot]] = [
     Webtrap,
 ]
 
+for honeypot in all_honeypots:
+    honeypot.configure()
+
 honeypot_binds = [honeypot.bind_class_types for honeypot in all_honeypots]
 
 honeypot_routers = [honeypot.router for honeypot in all_honeypots]

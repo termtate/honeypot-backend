@@ -25,7 +25,12 @@ class Conpot(Honeypot[Model, DBModel], DockerMixin):
     attack_model = Model
     ModelInDB = DBModel
 
-    docker_config = {"container_name": '1'}
+    docker_config = {"container_name": 'conpot'}
+
+    @classmethod
+    def configure(cls):
+        cls.configure_docker()
+        cls.configure_honeypot()
 
     @staticmethod
     def configure_docker_routes(route):

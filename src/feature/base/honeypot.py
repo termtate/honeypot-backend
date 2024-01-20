@@ -1,5 +1,5 @@
 import contextlib
-from typing import Protocol, ClassVar, Type, TypeVar, cast, final, runtime_checkable
+from typing import Protocol, ClassVar, Type, TypeVar, cast, runtime_checkable
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 from db.models import Base
 from functools import cache
@@ -120,8 +120,8 @@ class Honeypot(Protocol[TModel, TDBModel]):
     >>>     id: int | None = Field(default=None, primary_key=True, unique=True)
 
     """
-    def __init_subclass__(cls) -> None:
-        cls.configure()
+    # def __init_subclass__(cls) -> None:
+    #     cls.configure()
 
     @classmethod
     @property
@@ -132,7 +132,7 @@ class Honeypot(Protocol[TModel, TDBModel]):
 
         return ModelWithId
 
-    @final
+    # @final
     @classmethod
     def configure(cls):
         cls.configure_honeypot()

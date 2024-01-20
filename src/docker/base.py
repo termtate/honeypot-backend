@@ -1,51 +1,65 @@
-from aiodocker import Docker
-from aiodocker.docker import DockerContainer
-from typing import Protocol, overload, Literal, AsyncGenerator, Final, TypedDict
-from contextlib import AbstractAsyncContextManager
+from typing import Protocol, Literal, Final, TypedDict
+from httpx import AsyncClient
+from pydantic import BaseModel, ConfigDict, Field
+from expression import pipe
 
 
-class HoneypotDocker(AbstractAsyncContextManager, Protocol):
-    docker: Final[Docker] = Docker()
-    container: DockerContainer
+class ContainerState(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    stats: Literal["running", "stopped",
+                   "paused"] = Field(validation_alias="Status")
 
-    async def start_container(self):
-        await self.container.start()
 
-    async def pause_container(self):
-        await self.container.pause()
+class ContainerInfo(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    state: ContainerState
 
-    async def unpause_container(self):
-        await self.container.unpause()
 
-    async def stop_container(self):
-        await self.container.stop()
+class HoneypotDocker(Protocol):
+    docker_base_url: Final = ""
+    config: "DockerConfig"
 
-    async def kill_container(self):
-        await self.container.kill()
+    async def start_container(self, client: AsyncClient):
+        await client.post(
+            f"{self.docker_base_url}/v1.43/containers/{self.config['container_name']}/start"
+        )
 
-    async def restart_container(self):
-        await self.container.restart()
+    async def pause_container(self, client: AsyncClient):
+        await client.post(
+            f"{self.docker_base_url}/v1.43/containers/{self.config['container_name']}/pause"
+        )
 
-    @overload
+    async def unpause_container(self, client: AsyncClient):
+        await client.post(
+            f"{self.docker_base_url}/v1.43/containers/{self.config['container_name']}/unpause"
+        )
+
+    async def stop_container(self, client: AsyncClient):
+        await client.post(
+            f"{self.docker_base_url}/v1.43/containers/{self.config['container_name']}/stop"
+        )
+
+    async def kill_container(self, client: AsyncClient):
+        await client.post(
+            f"{self.docker_base_url}/v1.43/containers/{self.config['container_name']}/kill"
+        )
+
+    async def restart_container(self, client: AsyncClient):
+        await client.post(
+            f"{self.docker_base_url}/v1.43/containers/{self.config['container_name']}/restart"
+        )
+
     async def container_stats(
-        self,
-        *,
-        stream: Literal[True],
-    ) -> AsyncGenerator[list, None]:
-        ...
-
-    @overload
-    async def container_stats(self, *, stream: Literal[False]) -> list:
-        ...
-
-    def container_stats(self, *, stream: bool):
-        return self.container.stats(stream=stream)
-
-    # async def __aenter__(self):
-    #     self.container = await self.docker.containers.get("")
-
-    # async def __aexit__(self, __exc_type, __exc_value, __traceback):
-    #     await self.docker.close()
+        self, client: AsyncClient
+    ) -> Literal["running", "stopped", "paused"]:
+        return pipe(
+            (
+                await client.get(
+                    f"{self.docker_base_url}/v1.43/containers/{self.config['container_name']}/json"
+                )
+            ).content,
+            ContainerInfo.model_validate_json,
+        ).state.stats
 
     class DockerConfig(TypedDict):
         container_name: str

@@ -20,6 +20,7 @@ dependencies = [
     "fastapi-injector>=0.5.3",
     "sqlmodel>=0.0.14",
     "aiodocker>=0.21.0",
+    "httpx>=0.26.0",
 ]
 readme = "README.md"
 requires-python = ">= 3.10"
