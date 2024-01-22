@@ -4,7 +4,7 @@ from fastapi import WebSocket
 from pydantic import RootModel
 from source.base import DataSource
 from logger import Logger
-from core import Settings
+from core import setting
 import aioreactive as rx
 import asyncio
 from typing import Protocol, TypeVar
@@ -61,7 +61,6 @@ class WebsocketManager(Protocol[T]):
     >>> class MyWebsocketManager(WebsocketManager[MySchema]):
     >>>     source: MySource
     >>>     logger: Logger
-    >>>     setting: Settings
     
     2. 在ws端口中使用
     >>> @router.websocket("/ws")
@@ -78,12 +77,11 @@ class WebsocketManager(Protocol[T]):
     """
     source: DataSource[T]
     logger: Logger
-    setting: Settings
 
     async def receive(self, websocket: WebSocket):
         buffered_stream = await pipe(
             self.source.stream,
-            buffer(self.setting.WEBSOCKET_BUFFER_SEND_INTERVAL.seconds)
+            buffer(setting.WEBSOCKET_BUFFER_SEND_INTERVAL.seconds)
         )
 
         async for attacks in rx.AsyncIteratorObserver(buffered_stream):

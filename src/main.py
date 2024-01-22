@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from contextlib import asynccontextmanager
 from injector import Injector
-from core import Settings
+from core import setting
 from fastapi_injector import attach_injector, InjectorMiddleware, RequestScopeOptions
 from logger import LoggerModule
 from db import DBModule
@@ -23,8 +23,7 @@ async def lifespan(app: FastAPI, injector: Injector):
 def make_app(injector: Injector) -> FastAPI:
     app = FastAPI(lifespan=lambda app: lifespan(app, injector))
 
-    settings = injector.get(Settings)
-    app.include_router(api_router, prefix=settings.API_V1_STR)
+    app.include_router(api_router, prefix=setting.API_V1_STR)
     app.add_middleware(InjectorMiddleware, injector=injector)
     attach_injector(app, injector, RequestScopeOptions(enable_cleanup=True))
     return app

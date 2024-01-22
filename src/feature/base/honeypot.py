@@ -11,10 +11,11 @@ from sqlmodel import Field as Field
 from injector import Binder, ClassProvider, singleton
 from source.base import DataSource
 from logger import Logger
-from core import Settings
 
 TModel = TypeVar("TModel", bound=Base, covariant=True)
 TDBModel = TypeVar("TDBModel", bound=Base)
+
+TCRUD = TypeVar("TCRUD", bound=CRUDWithSession)
 
 
 class Route:
@@ -52,7 +53,7 @@ class Route:
             ),
         ) -> TDBModel:
             new = await crud.create(
-                cast(TDBModel, self.honeypot.ModelInDB.model_validate(attack))
+                cast(TDBModel, self.honeypot.db_model.model_validate(attack))
             )
             await source.stream.asend(cast(TDBModel, attack))
             return new
@@ -111,7 +112,7 @@ class Honeypot(Protocol[TModel, TDBModel]):
     因为[PEP 526](https://www.python.org/dev/peps/pep-0526/#class-and-instance-variable-annotations)的限制，
     ClassVar内不能有泛型，没办法做静态检查，所以这里一定要确保`database_model`的值和泛型的类型`Type[T]`一致
     """
-    ModelInDB: ClassVar[Type[Base]]
+    db_model: ClassVar[Type[Base]]
     """
     表示数据库表的一个类，通常只需要继承上面的`attack_model`并且加一个`id`字段就可以
     >>> from sqlmodel import Field
@@ -153,14 +154,14 @@ class Honeypot(Protocol[TModel, TDBModel]):
     @classmethod
     @property
     @cache
-    def CRUD(cls: Type["Honeypot"]) -> Type[CRUDWithSession[TDBModel]]:
+    def CRUD(cls: Type["Honeypot"]):
         """
         生成的这个蜜罐的数据库CRUD类
         """
         @request_scope
         @inject_constructor
         class _CRUD(CRUDWithSession):
-            crud = CRUDBase(cls.ModelInDB)
+            crud = CRUDBase(cls.db_model)
             session: AsyncSession
 
         return _CRUD
@@ -175,14 +176,14 @@ class Honeypot(Protocol[TModel, TDBModel]):
     @classmethod
     @property
     @cache
-    def Source(cls: Type["Honeypot"]) -> Type[DataSource[TDBModel]]:
+    def Source(cls: Type["Honeypot"]):
         """
         生成的这个蜜罐的`DataSource`类，这个类里面有一个`stream`流，可以订阅这个流，在蜜罐每次接收一个attack时收到这个attack
         """
         @lifespan_scope
         @inject_constructor
         class _Source(DataSource):
-            schema = cls.ModelInDB
+            schema = cls.db_model
             logger: Logger
 
             async def receive_data_forever(self):
@@ -193,7 +194,7 @@ class Honeypot(Protocol[TModel, TDBModel]):
     @classmethod
     @property
     @cache
-    def Websocket(cls) -> Type[WebsocketManager[TDBModel]]:
+    def Websocket(cls):
         """
         用于管理websocket连接的类
         """
@@ -202,22 +203,21 @@ class Honeypot(Protocol[TModel, TDBModel]):
         class _Websocket(WebsocketManager):
             source: cls.Source  # type: ignore
             logger: Logger
-            setting: Settings
 
         return _Websocket
 
     @classmethod
     def bind_class_types(cls: Type["Honeypot"], binder: Binder):
         binder.bind(
-            CRUDWithSession[cls.ModelInDB],
+            CRUDWithSession[cls.db_model],
             ClassProvider(cls.CRUD),  # type: ignore
             scope=request_scope
         )
         binder.bind(
-            DataSource[cls.ModelInDB],
+            DataSource[cls.db_model],
             ClassProvider(cls.Source)  # type: ignore
         )
         binder.bind(
-            WebsocketManager[cls.ModelInDB],
+            WebsocketManager[cls.db_model],
             ClassProvider(cls.Websocket)  # type: ignore
         )

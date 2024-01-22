@@ -1,10 +1,8 @@
 from pydantic_settings import BaseSettings
-from injector import singleton
 from datetime import timedelta
 from pydantic import PostgresDsn
 
 
-@singleton
 class Settings(BaseSettings):
     API_V1_STR: str = "/api/v1"
 
@@ -17,3 +15,8 @@ class Settings(BaseSettings):
         password="123456",
         # path="test"  # 哪个数据库
     )
+
+    DOCKER_REMOTE_API_URL: str = ""
+
+
+setting = Settings()

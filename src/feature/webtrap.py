@@ -30,9 +30,9 @@ class DBModel(Model, table=True):
 class Webtrap(Honeypot[Model, DBModel], DockerMixin):
     router = APIRouter(prefix="/webtrap_attacks", tags=["webtrap"])
     attack_model = Model
-    ModelInDB = DBModel
+    db_model = DBModel
 
-    docker_config = {"container_name": 'honeyd'}
+    docker_config = {"container_name": 'webtrap'}
 
     @classmethod
     def configure(cls):

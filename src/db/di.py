@@ -1,5 +1,5 @@
 from injector import singleton, provider, Module
-from core import Settings
+from core import setting
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine, AsyncEngine
 from sqlmodel.ext.asyncio.session import AsyncSession
 from fastapi_injector import request_scope
@@ -9,9 +9,9 @@ from .session import SessionContextManager
 class DBModule(Module):
     @singleton
     @provider
-    def provide_db_engine(self, settings: Settings) -> AsyncEngine:
+    def provide_db_engine(self) -> AsyncEngine:
         return create_async_engine(
-            str(settings.SQLALCHEMY_DATABASE_URI),
+            str(setting.SQLALCHEMY_DATABASE_URI),
             future=True,
             # echo=settings.ECHO_SQL,
         )

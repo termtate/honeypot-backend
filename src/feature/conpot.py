@@ -23,7 +23,7 @@ class DBModel(Model, table=True):
 class Conpot(Honeypot[Model, DBModel], DockerMixin):
     router = APIRouter(prefix="/conpot_attacks", tags=["conpot"])
     attack_model = Model
-    ModelInDB = DBModel
+    db_model = DBModel
 
     docker_config = {"container_name": 'conpot'}
 

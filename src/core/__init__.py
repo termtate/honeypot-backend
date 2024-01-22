@@ -1,1 +1,1 @@
-from core.config import Settings as Settings
+from core.config import setting as setting

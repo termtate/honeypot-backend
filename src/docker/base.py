@@ -2,6 +2,7 @@ from typing import Protocol, Literal, Final, TypedDict
 from httpx import AsyncClient
 from pydantic import BaseModel, ConfigDict, Field
 from expression import pipe
+from core import setting
 
 
 class ContainerState(BaseModel):
@@ -16,7 +17,7 @@ class ContainerInfo(BaseModel):
 
 
 class HoneypotDocker(Protocol):
-    docker_base_url: Final = ""
+    docker_base_url: Final = str(setting.DOCKER_REMOTE_API_URL)
     config: "DockerConfig"
 
     async def start_container(self, client: AsyncClient):

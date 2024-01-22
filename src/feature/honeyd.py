@@ -69,7 +69,7 @@ class DBModel(Model, table=True):
 class Honeyd(Honeypot[Model, DBModel], DockerMixin):
     router = APIRouter(prefix="/honeyd_attacks", tags=["honeyd"])
     attack_model = Model
-    ModelInDB = DBModel
+    db_model = DBModel
 
     docker_config = {"container_name": 'honeyd'}
 

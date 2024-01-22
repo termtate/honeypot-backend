@@ -1,3 +1,4 @@
+from __future__ import annotations
 from functools import cache
 
 from httpx import AsyncClient
@@ -35,7 +36,7 @@ class DockerMixin(Protocol):
         cls.configure_docker_routes(route)
 
     @staticmethod
-    def configure_docker_routes(route: "Route"):
+    def configure_docker_routes(route: Route):
         ...
 
 
@@ -49,14 +50,14 @@ class Route:
     def _with_docker_manager_parameter_in(
         self, func: Callable[[DockerManager, AsyncClient], Awaitable]
     ):
-        async def inner(
+        async def docker_api(
             manager: DockerManager = Injected(
                 self.docker.ContainerManager  # type: ignore
             )
         ):
             return await func(manager, manager.client)
 
-        return inner
+        return docker_api
 
     @overload
     def configure_change_container_state(self, states: Literal["all"], /):
@@ -82,30 +83,15 @@ class Route:
             self.docker.ContainerManager  # type: ignore
         )
         mapping = {
-            "start":
-            self._with_docker_manager_parameter_in(
-                ContainerManager.start_container
-            ),
-            "stop":
-            self._with_docker_manager_parameter_in(
-                ContainerManager.stop_container
-            ),
-            "pause":
-            self._with_docker_manager_parameter_in(
-                ContainerManager.pause_container
-            ),
-            "unpause":
-            self._with_docker_manager_parameter_in(
-                ContainerManager.unpause_container
-            ),
-            "restart":
-            self._with_docker_manager_parameter_in(
-                ContainerManager.restart_container
-            ),
-            "kill":
-            self._with_docker_manager_parameter_in(
-                ContainerManager.kill_container
-            )
+            k: self._with_docker_manager_parameter_in(v)
+            for k, v in {
+                "start": ContainerManager.start_container,
+                "stop": ContainerManager.stop_container,
+                "pause": ContainerManager.pause_container,
+                "unpause": ContainerManager.unpause_container,
+                "restart": ContainerManager.restart_container,
+                "kill": ContainerManager.kill_container
+            }.items()
         }
         if states == ("all", ):
             for state in mapping:
