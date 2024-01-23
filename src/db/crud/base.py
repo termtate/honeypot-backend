@@ -44,8 +44,8 @@ class CRUDWithSession(Protocol[TModel]):
     
     >>> @request_scope
     >>> @inject_constructor
-    >>> class MyCRUD(CRUDWithSession[MySchema, MyOrm]):
-    >>>     crud = CRUDBase(MyOrm)
+    >>> class MyCRUD(CRUDWithSession[MyModel]):
+    >>>     crud = CRUDBase(MyModel)
     >>>     session: AsyncSession
     """
     crud: ClassVar[CRUDBase]
