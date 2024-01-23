@@ -1,6 +1,28 @@
 from injector import singleton, provider, Module
 from loguru import logger
-from loguru._logger import Logger
+# from loguru._logger import Logger
+from typing import Protocol, runtime_checkable, AnyStr
+
+
+@runtime_checkable
+class Logger(Protocol):
+    def info(self, content: AnyStr):
+        ...
+
+    def warning(self, content: AnyStr):
+        ...
+
+    def debug(self, content: AnyStr):
+        ...
+
+    def error(self, content: AnyStr):
+        ...
+
+    def critical(self, content: AnyStr):
+        ...
+
+    def success(self, content: AnyStr):
+        ...
 
 
 class LoggerModule(Module):
