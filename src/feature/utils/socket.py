@@ -60,19 +60,25 @@ class SocketSource(DataSource[TS], Protocol[TS]):
     
     >>> @lifespan_scope
     >>> @inject_constructor
-    >>> class MySource(SocketSource[MySchema]):
+    >>> class MySource(SocketSource[MyDBModel]):
     >>>     schema = MySchema
     >>>     socket = Socket(ip=..., port=...)
     >>>     logger: Logger
+    >>>     crud: CRUDWithSession[MyDBModel]
     """
     socket: ClassVar[Socket]
     logger: Logger
 
     async def receive_data_forever(self):
         self.logger.info(f"start listening socket on {self.socket}")
+
+        async def validate_and_store(s: str | bytes):
+            a = await self.add(s)
+            await self.crud.create(a)
+
         return await start_server(
             socket=self.socket,
             on_receive=catch (ValidationError) \
-                (self.add) \
+                (validate_and_store) \
                 (on_exception=lambda e: self.logger.warning(f"validate error: {e.json(indent=2, include_url=False)}"))
         )

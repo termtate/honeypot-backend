@@ -5,7 +5,8 @@ from core import setting
 from fastapi_injector import attach_injector, InjectorMiddleware, RequestScopeOptions
 from logger import LoggerModule
 from db import DBModule
-from feature import honeypot_binds, LifespanScope, lifespan_scope, api_router
+from feature import honeypot_binds, LifespanScope, lifespan_scope, api_router, all_honeypots
+from source.base import DataSource
 
 
 # https://fastapi.tiangolo.com/zh/advanced/events/#lifespan
@@ -13,6 +14,9 @@ from feature import honeypot_binds, LifespanScope, lifespan_scope, api_router
 async def lifespan(app: FastAPI, injector: Injector):
     scope = injector.get(LifespanScope)
     lifespan_scope.start_startup_events(injector)
+
+    for honeypot in all_honeypots:
+        injector.get(DataSource[honeypot.db_model], scope=LifespanScope)
 
     yield
 

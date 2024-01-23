@@ -1,7 +1,6 @@
 from typing import Type, TypeVar
 from source.base import DataSource
 from db.crud.base import CRUDWithSession
-from aioreactive import AsyncIteratorObserver
 from injector import Injector
 from logger import Logger
 from fastapi_injector import RequestScopeFactory
@@ -20,7 +19,7 @@ async def store_attack(
     request_scope_factory = injector.get(RequestScopeFactory)
     logger = injector.get(Logger)
 
-    async for attack in AsyncIteratorObserver(s.stream):
+    async for attack in s:
         async with request_scope_factory.create_scope():
             c = injector.get(crud)
             await c.create(attack)

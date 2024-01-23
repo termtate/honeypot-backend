@@ -6,7 +6,7 @@ from .base import Honeypot, APIRouter
 from pydantic import BeforeValidator, ConfigDict, ValidationError
 from pydantic_xml import BaseXmlModel, element
 from schema import Socket
-from .utils import start_server, catch, lifespan_scope, store_attack
+from .utils import start_server, catch
 from feature.base.docker import DockerMixin
 
 Time = Annotated[
@@ -99,8 +99,3 @@ class Honeyd(Honeypot[Model, DBModel], DockerMixin):
                 (source.add) \
                 (on_exception=lambda e: source.logger.warning(f"validate error: {e.json(indent=2, include_url=False)}"))
         )
-
-
-@lifespan_scope.on_startup
-async def store_attack_to_db(injector):
-    return await store_attack(Honeyd.Source, Honeyd.CRUD)(injector)

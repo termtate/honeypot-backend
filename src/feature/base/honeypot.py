@@ -48,15 +48,8 @@ class Route:
             source: DataSource[TDBModel] = Injected(
                 self.honeypot.Source  # type: ignore
             ),
-            crud: CRUDWithSession[TDBModel] = Injected(
-                self.honeypot.CRUD  # type: ignore
-            ),
         ) -> TDBModel:
-            new = await crud.create(
-                cast(TDBModel, self.honeypot.db_model.model_validate(attack))
-            )
-            await source.stream.asend(cast(TDBModel, attack))
-            return new
+            return await source.add(cast(TDBModel, attack))
 
         return default_create_attack
 
@@ -96,9 +89,23 @@ class Honeypot(Protocol[TModel, TDBModel]):
     
     **不要实例化这个类（的子类）**
     
-    这个类的用法：   
+    写完这个类以后，要记得去`__init__.py`的`all_honeypots`列表里加上新增的类
     
-    TODO
+    这个类的用法：   
+    - 使用injector获取蜜罐相关类的实例：
+
+        >>> @inject
+        >>> async def get_attacks(source: DataSource[MyDBModel]):
+        >>>     async for attack in source:
+        >>>         print(attack)
+        
+        >>> @inject
+        >>> async def get_attacks(crud: CRUDWithSession[MyDBModel]):
+        >>>     return await crud.get(limit=10)
+        可以直接使用`DataSource[MyDBModel]`等表示相关类的类型并用`@inject`获取到，因为`Honeypot`类已经完成了类型的绑定工作
+    - 或者可以手动初始化类（不推荐）：
+    
+        >>> source = MyHoneypot.Source(schema=..., logger=...)
     
     这个类只负责对于大部分重复样板代码的动态生成，如果要实现的蜜罐有其他定制化需求，可以考虑手动编写相关的实现类
     """
@@ -160,7 +167,7 @@ class Honeypot(Protocol[TModel, TDBModel]):
         """
         @request_scope
         @inject_constructor
-        class _CRUD(CRUDWithSession):
+        class _CRUD(CRUDWithSession[cls.db_model]):
             crud = CRUDBase(cls.db_model)
             session: AsyncSession
 
@@ -182,9 +189,10 @@ class Honeypot(Protocol[TModel, TDBModel]):
         """
         @lifespan_scope
         @inject_constructor
-        class _Source(DataSource):
+        class _Source(DataSource[cls.db_model]):
             schema = cls.db_model
             logger: Logger
+            crud: CRUDWithSession[cls.db_model]
 
             async def receive_data_forever(self):
                 return await cls.receive_data_forever(self)
@@ -215,7 +223,8 @@ class Honeypot(Protocol[TModel, TDBModel]):
         )
         binder.bind(
             DataSource[cls.db_model],
-            ClassProvider(cls.Source)  # type: ignore
+            ClassProvider(cls.Source),  # type: ignore
+            scope=request_scope
         )
         binder.bind(
             WebsocketManager[cls.db_model],
