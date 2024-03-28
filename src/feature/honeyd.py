@@ -71,7 +71,7 @@ class Honeyd(Honeypot[Model, DBModel], DockerMixin):
     attack_model = Model
     db_model = DBModel
 
-    docker_config = {"container_name": 'honeyd'}
+    docker_config = {"container_name": "honeyd"}
 
     @classmethod
     def configure(cls):
@@ -95,7 +95,9 @@ class Honeyd(Honeypot[Model, DBModel], DockerMixin):
         source.logger.info(f"start listening socket on {socket}")
         return await start_server(
             socket=socket,
-            on_receive=catch (ValidationError) \
-                (source.add) \
-                (on_exception=lambda e: source.logger.warning(f"validate error: {e.json(indent=2, include_url=False)}"))
+            on_receive=catch(ValidationError)(source.add)(
+                on_exception=lambda e: source.logger.warning(
+                    f"validate error: {e.json(indent=2, include_url=False)}"
+                )
+            ),
         )

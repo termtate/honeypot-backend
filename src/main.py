@@ -2,10 +2,20 @@ from fastapi import FastAPI
 from contextlib import asynccontextmanager
 from injector import Injector
 from core import setting
-from fastapi_injector import attach_injector, InjectorMiddleware, RequestScopeOptions
+from fastapi_injector import (
+    attach_injector,
+    InjectorMiddleware,
+    RequestScopeOptions,
+)
 from logger import LoggerModule
 from db import DBModule
-from feature import honeypot_binds, LifespanScope, lifespan_scope, api_router, all_honeypots
+from feature import (
+    honeypot_binds,
+    LifespanScope,
+    lifespan_scope,
+    api_router,
+    all_honeypots,
+)
 from source.base import DataSource
 
 

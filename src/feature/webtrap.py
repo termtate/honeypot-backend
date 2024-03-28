@@ -32,7 +32,7 @@ class Webtrap(Honeypot[Model, DBModel], DockerMixin):
     attack_model = Model
     db_model = DBModel
 
-    docker_config = {"container_name": 'webtrap'}
+    docker_config = {"container_name": "webtrap"}
 
     @classmethod
     def configure(cls):

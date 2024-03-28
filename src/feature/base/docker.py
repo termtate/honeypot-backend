@@ -3,7 +3,17 @@ from functools import cache
 
 from httpx import AsyncClient
 from docker.manager import DockerManager
-from typing import Callable, Protocol, ClassVar, Type, Literal, cast, overload, Awaitable, TypeVar
+from typing import (
+    Callable,
+    Protocol,
+    ClassVar,
+    Type,
+    Literal,
+    cast,
+    overload,
+    Awaitable,
+    TypeVar,
+)
 from fastapi import APIRouter
 from feature.utils.lifespan_scope import lifespan_scope
 from fastapi_injector import Injected
@@ -53,7 +63,7 @@ class Route:
         async def docker_api(
             manager: DockerManager = Injected(
                 self.docker.ContainerManager  # type: ignore
-            )
+            ),
         ):
             return await func(manager, manager.client)
 
@@ -80,7 +90,7 @@ class Route:
     def configure_change_container_state(self, *states):
         ContainerManager = cast(
             Type[DockerManager],
-            self.docker.ContainerManager  # type: ignore
+            self.docker.ContainerManager,  # type: ignore
         )
         mapping = {
             k: self._with_docker_manager_parameter_in(v)
@@ -90,7 +100,7 @@ class Route:
                 "pause": ContainerManager.pause_container,
                 "unpause": ContainerManager.unpause_container,
                 "restart": ContainerManager.restart_container,
-                "kill": ContainerManager.kill_container
+                "kill": ContainerManager.kill_container,
             }.items()
         }
         if states == ("all", ):
@@ -104,11 +114,11 @@ class Route:
     def configure_get_container_state(self):
         ContainerManager = cast(
             Type[DockerManager],
-            self.docker.ContainerManager  # type: ignore
+            self.docker.ContainerManager,  # type: ignore
         )
         self.docker.router.get(
             "/docker_state",
-            response_model=Literal["running", "stopped", "paused"]
+            response_model=Literal["running", "stopped", "paused"],
         )(
             self._with_docker_manager_parameter_in(
                 ContainerManager.container_stats

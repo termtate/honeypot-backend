@@ -17,10 +17,10 @@ class CRUDBase(Generic[TModel]):
         offset: int | None = None,
         limit: int | None = None,
     ) -> AsyncIterator[TModel]:
-        stmt = select(self.model)\
-            .order_by(col(self.model.id).desc())\
-            .offset(offset)\
-            .limit(limit)
+        stmt = (
+            select(self.model).order_by(col(self.model.id).desc()
+                                        ).offset(offset).limit(limit)
+        )
         stream = await session.stream_scalars(stmt)
         async for row in stream:
             yield row
@@ -41,13 +41,14 @@ class CRUDBase(Generic[TModel]):
 class CRUDWithSession(Protocol[TModel]):
     """
     将`CRUDBase`的方法里的session参数提升到了构造参数，以便依赖注入
-    
+
     >>> @request_scope
     >>> @inject_constructor
     >>> class MyCRUD(CRUDWithSession[MyModel]):
     >>>     crud = CRUDBase(MyModel)
     >>>     session: AsyncSession
     """
+
     crud: ClassVar[CRUDBase]
     session: AsyncSession
 

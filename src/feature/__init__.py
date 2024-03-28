@@ -1,7 +1,8 @@
 from typing import Type
 from .base import Honeypot
 from .utils.lifespan_scope import (
-    LifespanScope as LifespanScope, lifespan_scope as lifespan_scope
+    LifespanScope as LifespanScope,
+    lifespan_scope as lifespan_scope,
 )
 from fastapi import APIRouter
 from .conpot import Conpot

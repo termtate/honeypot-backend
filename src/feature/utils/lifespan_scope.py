@@ -2,7 +2,11 @@ import asyncio
 import threading
 from typing import Any, Awaitable, Callable, Type, cast
 from injector import Injector, Provider, Scope, InstanceProvider, Binding
-from contextlib import AbstractContextManager, AsyncExitStack, AbstractAsyncContextManager
+from contextlib import (
+    AbstractContextManager,
+    AsyncExitStack,
+    AbstractAsyncContextManager,
+)
 from typing import TypeVar
 
 T = TypeVar("T", bound=AbstractAsyncContextManager | AbstractContextManager)
@@ -11,12 +15,13 @@ T = TypeVar("T", bound=AbstractAsyncContextManager | AbstractContextManager)
 class LifespanScope(Scope):
     """
     在该Scope内的类会
-    1. 作为单例存在 
+    1. 作为单例存在
     2. 在第一次初始化时会调用__aenter__或__enter__方法
-    3. 在fastapi生命周期结束时调用__aexit__或__exit__方法 
-    
+    3. 在fastapi生命周期结束时调用__aexit__或__exit__方法
+
     (类需要实现`AbstractContextManager`或`AbstractAsyncContextManager`协议)
     """
+
     stack: AsyncExitStack
     context: dict[Type, Any]
     _loop: asyncio.AbstractEventLoop
@@ -57,7 +62,8 @@ class LifespanScope(Scope):
         # thread blocks
         try:
             asyncio.get_running_loop()
-        except RuntimeError:  # 'RuntimeError: There is no current event loop...'
+        except (RuntimeError
+                ):  # 'RuntimeError: There is no current event loop...'
             # Starting new event loop
             asyncio.run(stack.enter_async_context(obj))
         else:
@@ -92,7 +98,7 @@ class LifespanScopeDecorator:
             new_binding = Binding(
                 interface=binding.interface,
                 provider=binding.provider,
-                scope=LifespanScope
+                scope=LifespanScope,
             )
             setattr(cls, "__binding__", new_binding)
 

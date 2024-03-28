@@ -23,7 +23,7 @@ def buffer(interval: int):
           [1, 2]    [3, 4]
     """
     async def _buffer(
-        stream: rx.AsyncObservable[T]
+        stream: rx.AsyncObservable[T],
     ) -> rx.AsyncObservable[list[T]]:
         s = rx.AsyncSubject[list[T]]()
         buffer: list[T] = []
@@ -61,7 +61,7 @@ class WebsocketManager(Protocol[T]):
     >>> class MyWebsocketManager(WebsocketManager[MySchema]):
     >>>     source: MySource
     >>>     logger: Logger
-    
+
     2. 在ws端口中使用
     >>> @router.websocket("/ws")
     >>> async def endpoint(
@@ -75,13 +75,14 @@ class WebsocketManager(Protocol[T]):
     >>>             while True:
     >>>                 await websocket.receive_text()
     """
+
     source: DataSource[T]
     logger: Logger
 
     async def receive(self, websocket: WebSocket):
         buffered_stream = await pipe(
             self.source.stream,
-            buffer(setting.WEBSOCKET_BUFFER_SEND_INTERVAL.seconds)
+            buffer(setting.WEBSOCKET_BUFFER_SEND_INTERVAL.seconds),
         )
 
         async for attacks in rx.AsyncIteratorObserver(buffered_stream):

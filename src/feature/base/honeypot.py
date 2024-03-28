@@ -25,7 +25,7 @@ class Route:
     def configure_get_attacks(self):
         @self.honeypot.router.get(
             "/",
-            response_model=list[self.honeypot._ResponseModel]  # type: ignore
+            response_model=list[self.honeypot._ResponseModel],  # type: ignore
         )
         async def default_get_attacks(
             offset: int = 0,
@@ -41,7 +41,7 @@ class Route:
     def configure_create_attack(self):
         @self.honeypot.router.post(
             "/",
-            response_model=self.honeypot._ResponseModel  # type: ignore
+            response_model=self.honeypot._ResponseModel,  # type: ignore
         )
         async def default_create_attack(
             attack: self.honeypot.attack_model,
@@ -62,7 +62,7 @@ class Route:
             websocket: WebSocket,
             subscribe: WebsocketManager[TDBModel] = Injected(
                 self.honeypot.Websocket  # type: ignore
-            )
+            ),
         ):
             await websocket.accept()
 
@@ -78,35 +78,35 @@ class Route:
 @runtime_checkable
 class Honeypot(Protocol[TModel, TDBModel]):
     """
-    因为编写一个蜜罐，所需的代码大多是相同的，所以编写了这个类，用来动态生成蜜罐的大部分功能   
-    
+    因为编写一个蜜罐，所需的代码大多是相同的，所以编写了这个类，用来动态生成蜜罐的大部分功能
+
     通过继承这个类并编写一点配置后，这个类能够生成与这个蜜罐对应的：
     1. `DataSource`类: `Honeypot.Source`
     2. `CRUDWithSession`类: `Honeypot.CRUD`
     3. `WebsocketManager`类: `Honeypot.Websocket`
     4. 数据库增、查的fastapi路由
     4. websocket fastapi路由，可以在蜜罐新增一条攻击后把攻击信息发给websocket的订阅者
-    
+
     **不要实例化这个类（的子类）**
-    
+
     写完这个类以后，要记得去`__init__.py`的`all_honeypots`列表里加上新增的类
-    
-    这个类的用法：   
+
+    这个类的用法：
     - 使用injector获取蜜罐相关类的实例：
 
         >>> @inject
         >>> async def get_attacks(source: DataSource[MyDBModel]):
         >>>     async for attack in source:
         >>>         print(attack)
-        
+
         >>> @inject
         >>> async def get_attacks(crud: CRUDWithSession[MyDBModel]):
         >>>     return await crud.get(limit=10)
         可以直接使用`DataSource[MyDBModel]`等表示相关类的类型并用`@inject`获取到，因为`Honeypot`类已经完成了类型的绑定工作
     - 或者可以手动初始化类（不推荐）：
-    
+
         >>> source = MyHoneypot.Source(schema=..., logger=...)
-    
+
     这个类只负责对于大部分重复样板代码的动态生成，如果要实现的蜜罐有其他定制化需求，可以考虑手动编写相关的实现类
     """
 
@@ -219,14 +219,14 @@ class Honeypot(Protocol[TModel, TDBModel]):
         binder.bind(
             CRUDWithSession[cls.db_model],
             ClassProvider(cls.CRUD),  # type: ignore
-            scope=request_scope
+            scope=request_scope,
         )
         binder.bind(
             DataSource[cls.db_model],
             ClassProvider(cls.Source),  # type: ignore
-            scope=request_scope
+            scope=request_scope,
         )
         binder.bind(
             WebsocketManager[cls.db_model],
-            ClassProvider(cls.Websocket)  # type: ignore
+            ClassProvider(cls.Websocket),  # type: ignore
         )

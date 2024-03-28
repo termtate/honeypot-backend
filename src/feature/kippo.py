@@ -20,7 +20,7 @@ class Kippo(Honeypot[Model, DBModel], DockerMixin):
     attack_model = Model
     db_model = DBModel
 
-    docker_config = {"container_name": 'kippo'}
+    docker_config = {"container_name": "kippo"}
 
     @classmethod
     def configure(cls):
@@ -29,7 +29,7 @@ class Kippo(Honeypot[Model, DBModel], DockerMixin):
 
     @staticmethod
     def configure_docker_routes(route):
-        route.configure_change_container_state("all")
+        route.configure_change_container_state("start", "stop")
         route.configure_get_container_state()
 
     @staticmethod

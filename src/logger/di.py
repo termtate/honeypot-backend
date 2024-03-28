@@ -1,5 +1,6 @@
 from injector import singleton, provider, Module
 from loguru import logger
+
 # from loguru._logger import Logger
 from typing import Protocol, runtime_checkable, AnyStr
 
@@ -33,6 +34,6 @@ class LoggerModule(Module):
         logger.add(
             "log/received_{time}.log",
             retention="1 week",  # 保留最新一周数据
-            rotation="10 MB"  # 超过10mb创建新文件
+            rotation="10 MB",  # 超过10mb创建新文件
         )
-        return logger  # type: ignore
+        return logger

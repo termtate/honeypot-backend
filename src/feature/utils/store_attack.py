@@ -12,8 +12,9 @@ TM = TypeVar("TM", bound=Base)
 
 @curry_flipped(1)
 async def store_attack(
-    injector: Injector, source: Type[DataSource[TM]],
-    crud: Type[CRUDWithSession[TM]]
+    injector: Injector,
+    source: Type[DataSource[TM]],
+    crud: Type[CRUDWithSession[TM]],
 ):
     s = injector.get(source)
     request_scope_factory = injector.get(RequestScopeFactory)

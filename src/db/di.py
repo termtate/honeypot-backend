@@ -1,6 +1,10 @@
 from injector import singleton, provider, Module
 from core import setting
-from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine, AsyncEngine
+from sqlalchemy.ext.asyncio import (
+    async_sessionmaker,
+    create_async_engine,
+    AsyncEngine,
+)
 from sqlmodel.ext.asyncio.session import AsyncSession
 from fastapi_injector import request_scope
 from .session import SessionContextManager

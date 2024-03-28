@@ -1,7 +1,16 @@
 import asyncio
 
 from schema import Socket
-from typing import Callable, Awaitable, Any, Protocol, Type, TypeVar, ParamSpec, ClassVar
+from typing import (
+    Callable,
+    Awaitable,
+    Any,
+    Protocol,
+    Type,
+    TypeVar,
+    ParamSpec,
+    ClassVar,
+)
 from pydantic import ValidationError
 from expression import curry
 from source.base import DataSource
@@ -54,10 +63,10 @@ TS = TypeVar("TS", bound=Base)
 
 class SocketSource(DataSource[TS], Protocol[TS]):
     """
-    对来源是socket发送数据的DataSource的封装   
-    
+    对来源是socket发送数据的DataSource的封装
+
     用法：
-    
+
     >>> @lifespan_scope
     >>> @inject_constructor
     >>> class MySource(SocketSource[MyDBModel]):
@@ -66,6 +75,7 @@ class SocketSource(DataSource[TS], Protocol[TS]):
     >>>     logger: Logger
     >>>     crud: CRUDWithSession[MyDBModel]
     """
+
     socket: ClassVar[Socket]
     logger: Logger
 
@@ -78,7 +88,9 @@ class SocketSource(DataSource[TS], Protocol[TS]):
 
         return await start_server(
             socket=self.socket,
-            on_receive=catch (ValidationError) \
-                (validate_and_store) \
-                (on_exception=lambda e: self.logger.warning(f"validate error: {e.json(indent=2, include_url=False)}"))
+            on_receive=catch(ValidationError)(validate_and_store)(
+                on_exception=lambda e: self.logger.warning(
+                    f"validate error: {e.json(indent=2, include_url=False)}"
+                )
+            ),
         )

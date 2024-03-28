@@ -3,7 +3,7 @@ import asyncio
 
 async def send():
     _, writer = await asyncio.open_connection("localhost", 8123)
-    message = '''<Root>
+    message = """<Root>
         <SYMBOL>20</SYMBOL>
         <AlertType>1</AlertType>
         <SubType>1</SubType>
@@ -16,7 +16,7 @@ async def send():
         <PacketLen>1</PacketLen>
         <ip_src>0.0.0.0</ip_src>
         <ip_dst>1.1.1.1</ip_dst>
-    </Root>'''
+    </Root>"""
     writer.write(message.encode())
     await writer.drain()
     print("send message")
