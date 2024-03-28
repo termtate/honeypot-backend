@@ -11,7 +11,7 @@ class Model(Base):
     function_code: int
     response: str
     time: datetime
-    session_id: str = Field(description="1")
+    session_id: str
 
 
 class DBModel(Model, table=True):
@@ -25,7 +25,7 @@ class Conpot(Honeypot[Model, DBModel], DockerMixin):
     attack_model = Model
     db_model = DBModel
 
-    docker_config = {"container_name": 'conpot'}
+    docker_config = {"container_name": "conpot"}
 
     @classmethod
     def configure(cls):
