@@ -1,6 +1,6 @@
 from db.models import Base, Field
 from .base import Honeypot, APIRouter
-from .base.docker import DockerMixin
+from .base.mixin.docker import DockerMixin
 
 
 class Model(Base):
@@ -33,11 +33,6 @@ class Webtrap(Honeypot[Model, DBModel], DockerMixin):
     db_model = DBModel
 
     docker_config = {"container_name": "webtrap"}
-
-    @classmethod
-    def configure(cls):
-        cls.configure_docker()
-        cls.configure_honeypot()
 
     @staticmethod
     def configure_docker_routes(route):

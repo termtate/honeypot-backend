@@ -1,7 +1,7 @@
 from db.models import Base
 from datetime import datetime
 from .base import Honeypot, APIRouter, Field
-from .base.docker import DockerMixin
+from .base.mixin.docker import DockerMixin
 
 
 class Model(Base):
@@ -21,11 +21,6 @@ class Kippo(Honeypot[Model, DBModel], DockerMixin):
     db_model = DBModel
 
     docker_config = {"container_name": "kippo"}
-
-    @classmethod
-    def configure(cls):
-        cls.configure_docker()
-        cls.configure_honeypot()
 
     @staticmethod
     def configure_docker_routes(route):

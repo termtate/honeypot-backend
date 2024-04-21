@@ -47,7 +47,7 @@ def make_app(injector: Injector) -> FastAPI:
 injector = Injector([LoggerModule(), DBModule()] + honeypot_binds)
 app = make_app(injector)
 
-if __name__ == "__main__":
-    import uvicorn
+# if __name__ == "__main__":
+#     import uvicorn
 
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+#     uvicorn.run(app, host="0.0.0.0", port=8000)

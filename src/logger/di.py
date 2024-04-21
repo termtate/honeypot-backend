@@ -1,28 +1,27 @@
 from injector import singleton, provider, Module
 from loguru import logger
 
-# from loguru._logger import Logger
-from typing import Protocol, runtime_checkable, AnyStr
+from typing import Protocol, runtime_checkable
 
 
 @runtime_checkable
 class Logger(Protocol):
-    def info(self, content: AnyStr):
+    def info(self, content: object):
         ...
 
-    def warning(self, content: AnyStr):
+    def warning(self, content: object):
         ...
 
-    def debug(self, content: AnyStr):
+    def debug(self, content: object):
         ...
 
-    def error(self, content: AnyStr):
+    def error(self, content: object):
         ...
 
-    def critical(self, content: AnyStr):
+    def critical(self, content: object):
         ...
 
-    def success(self, content: AnyStr):
+    def success(self, content: object):
         ...
 
 
@@ -36,4 +35,4 @@ class LoggerModule(Module):
             retention="1 week",  # 保留最新一周数据
             rotation="10 MB",  # 超过10mb创建新文件
         )
-        return logger
+        return logger  # type: ignore

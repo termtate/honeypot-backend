@@ -1,25 +1,26 @@
 from __future__ import annotations
 from functools import cache
 
+from .base import Mixin
 from httpx import AsyncClient
 from docker.manager import DockerManager
 from typing import (
     Callable,
-    Protocol,
     ClassVar,
+    Protocol,
     Type,
     Literal,
     cast,
     overload,
     Awaitable,
-    TypeVar,
 )
+from typing_extensions import Self
 from fastapi import APIRouter
 from feature.utils.lifespan_scope import lifespan_scope
 from fastapi_injector import Injected
 
 
-class DockerMixin(Protocol):
+class DockerMixin(Mixin, Protocol):
     docker_config: ClassVar[DockerManager.DockerConfig]
     router: ClassVar[APIRouter]
 
@@ -33,28 +34,18 @@ class DockerMixin(Protocol):
 
         return _ContainerManager
 
-    # def __init_subclass__(cls) -> None:
-    #     cls.configure_docker()
-
     @classmethod
-    def configure(cls):
-        ...
-
-    @classmethod
-    def configure_docker(cls):
-        route = Route(cls)
-        cls.configure_docker_routes(route)
+    def configure_mixin(cls, honeypot: Type[Self]):
+        route = Route(honeypot)
+        honeypot.configure_docker_routes(route)
 
     @staticmethod
     def configure_docker_routes(route: Route):
-        ...
-
-
-T = TypeVar("T", bound=DockerMixin)
+        raise NotImplementedError
 
 
 class Route:
-    def __init__(self, docker: Type[T]) -> None:
+    def __init__(self, docker: Type[DockerMixin]) -> None:
         self.docker = docker
 
     def _with_docker_manager_parameter_in(
@@ -103,7 +94,7 @@ class Route:
                 "kill": ContainerManager.kill_container,
             }.items()
         }
-        if states == ("all", ):
+        if states == ("all",):
             for state in mapping:
                 self.docker.router.post(f"/{state}_docker")(mapping[state])
 

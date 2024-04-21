@@ -7,7 +7,7 @@ from pydantic import BeforeValidator, ConfigDict, ValidationError
 from pydantic_xml import BaseXmlModel, element
 from schema import Socket
 from .utils import start_server, catch
-from feature.base.docker import DockerMixin
+from .base.mixin.docker import DockerMixin
 
 Time = Annotated[
     datetime,
@@ -16,11 +16,7 @@ Time = Annotated[
 
 ProtocolType = Annotated[
     Literal["ICMP", "TCP", "UDP"],
-    BeforeValidator(lambda i: {
-        "1": "ICMP",
-        "6": "TCP",
-        "17": "UDP"
-    }[i]),
+    BeforeValidator(lambda i: {"1": "ICMP", "6": "TCP", "17": "UDP"}[i]),
 ]
 
 
@@ -72,11 +68,6 @@ class Honeyd(Honeypot[Model, DBModel], DockerMixin):
     db_model = DBModel
 
     docker_config = {"container_name": "honeyd"}
-
-    @classmethod
-    def configure(cls):
-        cls.configure_docker()
-        cls.configure_honeypot()
 
     @staticmethod
     def configure_docker_routes(route):

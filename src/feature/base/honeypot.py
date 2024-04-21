@@ -1,5 +1,14 @@
 import contextlib
-from typing import Protocol, ClassVar, Type, TypeVar, cast, runtime_checkable
+from typing import (
+    Protocol,
+    ClassVar,
+    Type,
+    TypeVar,
+    cast,
+    runtime_checkable,
+)
+from collections import defaultdict
+from typing_extensions import override
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 from db.models import Base
 from functools import cache
@@ -7,10 +16,10 @@ from db.crud import CRUDWithSession, CRUDBase
 from ..utils import inject_constructor, lifespan_scope, WebsocketManager
 from fastapi_injector import Injected, request_scope
 from sqlmodel.ext.asyncio.session import AsyncSession
-from sqlmodel import Field as Field
 from injector import Binder, ClassProvider, singleton
 from source.base import DataSource
 from logger import Logger
+from .mixin.base import Mixin
 
 TModel = TypeVar("TModel", bound=Base, covariant=True)
 TDBModel = TypeVar("TDBModel", bound=Base)
@@ -57,6 +66,7 @@ class Route:
         """
         配置一个实时发送attacks的websocket路由
         """
+
         @self.honeypot.router.websocket("/ws")
         async def _send_attack_info(
             websocket: WebSocket,
@@ -76,7 +86,7 @@ class Route:
 
 
 @runtime_checkable
-class Honeypot(Protocol[TModel, TDBModel]):
+class _Honeypot(Protocol[TModel, TDBModel]):
     """
     因为编写一个蜜罐，所需的代码大多是相同的，所以编写了这个类，用来动态生成蜜罐的大部分功能
 
@@ -128,8 +138,6 @@ class Honeypot(Protocol[TModel, TDBModel]):
     >>>     id: int | None = Field(default=None, primary_key=True, unique=True)
 
     """
-    # def __init_subclass__(cls) -> None:
-    #     cls.configure()
 
     @classmethod
     @property
@@ -140,7 +148,6 @@ class Honeypot(Protocol[TModel, TDBModel]):
 
         return ModelWithId
 
-    # @final
     @classmethod
     def configure(cls):
         cls.configure_honeypot()
@@ -165,6 +172,7 @@ class Honeypot(Protocol[TModel, TDBModel]):
         """
         生成的这个蜜罐的数据库CRUD类
         """
+
         @request_scope
         @inject_constructor
         class _CRUD(CRUDWithSession[cls.db_model]):
@@ -187,6 +195,7 @@ class Honeypot(Protocol[TModel, TDBModel]):
         """
         生成的这个蜜罐的`DataSource`类，这个类里面有一个`stream`流，可以订阅这个流，在蜜罐每次接收一个attack时收到这个attack
         """
+
         @lifespan_scope
         @inject_constructor
         class _Source(DataSource[cls.db_model]):
@@ -206,6 +215,7 @@ class Honeypot(Protocol[TModel, TDBModel]):
         """
         用于管理websocket连接的类
         """
+
         @singleton
         @inject_constructor
         class _Websocket(WebsocketManager):
@@ -230,3 +240,29 @@ class Honeypot(Protocol[TModel, TDBModel]):
             WebsocketManager[cls.db_model],
             ClassProvider(cls.Websocket),  # type: ignore
         )
+
+
+class MixinConfiger(type(Protocol)):
+    _mixins: ClassVar[dict[str, list[Type[Mixin]]]] = defaultdict(list)
+
+    def __new__(
+        cls,
+        __name,
+        __bases,
+        __namespace,
+    ):
+        for b in __bases:
+            if issubclass(b, Mixin):
+                cls._mixins[__name].append(b)
+                # b.configure_mixin(cls)
+
+        return super().__new__(cls, __name, __bases, __namespace)
+
+
+class Honeypot(_Honeypot[TModel, TDBModel], Protocol, metaclass=MixinConfiger):
+    @override
+    @classmethod
+    def configure(cls):
+        for mixin in cls._mixins[cls.__name__]:
+            mixin.configure_mixin(cast(Type[Mixin], cls))
+        return super().configure()
