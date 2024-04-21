@@ -20,7 +20,7 @@ All Async Web App with Fastapi + SQLAlchemy 2.0 + Injector + aioreactive
 
 ## develop
 - 建议使用vscode和配套python扩展进行开发
-- 运行`rye run lint`格式化代码
+- 运行`rye lint`和`rye fmt`格式化代码
 
 
 ## 架构描述
