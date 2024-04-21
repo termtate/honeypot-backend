@@ -8,6 +8,7 @@ TModel = TypeVar("TModel", bound=Base)
 
 class CRUDBase(Generic[TModel]):
     """增删改查的基本实现"""
+
     def __init__(self, model: Type[TModel]) -> None:
         self.model = model
 
@@ -18,8 +19,10 @@ class CRUDBase(Generic[TModel]):
         limit: int | None = None,
     ) -> AsyncIterator[TModel]:
         stmt = (
-            select(self.model).order_by(col(self.model.id).desc()
-                                        ).offset(offset).limit(limit)
+            select(self.model)
+            .order_by(col(self.model.id).desc())
+            .offset(offset)
+            .limit(limit)
         )
         stream = await session.stream_scalars(stmt)
         async for row in stream:

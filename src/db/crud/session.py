@@ -10,6 +10,7 @@ class CRUDSession(Protocol[_TM]):
     """
     把CRUDBase里方法的session参数去掉以后的接口
     """
+
     def get(
         self,
         offset: int | None = None,

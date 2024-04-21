@@ -22,6 +22,7 @@ def buffer(interval: int):
             |         |
           [1, 2]    [3, 4]
     """
+
     async def _buffer(
         stream: rx.AsyncObservable[T],
     ) -> rx.AsyncObservable[list[T]]:
@@ -86,9 +87,9 @@ class WebsocketManager(Protocol[T]):
         )
 
         async for attacks in rx.AsyncIteratorObserver(buffered_stream):
-            text = str([
-                RootModel[T](attack).model_dump_json() for attack in attacks
-            ])
+            text = str(
+                [RootModel[T](attack).model_dump_json() for attack in attacks]
+            )
             await websocket.send_text(text)
             self.logger.info(f"send attack to {websocket}")
 

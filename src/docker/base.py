@@ -7,8 +7,9 @@ from core import setting
 
 class ContainerState(BaseModel):
     model_config = ConfigDict(extra="ignore")
-    stats: Literal["running", "stopped",
-                   "paused"] = Field(validation_alias="Status")
+    stats: Literal["running", "stopped", "paused"] = Field(
+        validation_alias="Status"
+    )
 
 
 class ContainerInfo(BaseModel):

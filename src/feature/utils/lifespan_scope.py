@@ -62,8 +62,9 @@ class LifespanScope(Scope):
         # thread blocks
         try:
             asyncio.get_running_loop()
-        except (RuntimeError
-                ):  # 'RuntimeError: There is no current event loop...'
+        except (
+            RuntimeError
+        ):  # 'RuntimeError: There is no current event loop...'
             # Starting new event loop
             asyncio.run(stack.enter_async_context(obj))
         else:
