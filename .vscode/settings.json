@@ -1,8 +1,10 @@
 {
     "python.analysis.typeCheckingMode": "basic",
-    "python.formatting.provider": "yapf",
     "editor.formatOnSave": true,
-    "editor.defaultFormatter": "ms-python.python",
+    "editor.defaultFormatter": "charliermarsh.ruff",
+    "editor.codeActionsOnSave": {
+        "source.fixAll": true
+    },
     "[ignore]": {
         "editor.defaultFormatter": "foxundermoon.shell-format"
     },
