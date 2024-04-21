@@ -5,60 +5,138 @@
 #   pre: false
 #   features: []
 #   all-features: false
+#   with-sources: false
 
 -e file:.
 aiodocker==0.21.0
+    # via honeypot-backend
 aiohttp==3.9.1
+    # via aiodocker
 aioreactive==0.16.0
+    # via honeypot-backend
 aiosignal==1.3.1
+    # via aiohttp
 annotated-types==0.6.0
+    # via pydantic
 anyio==3.7.1
+    # via fastapi
+    # via httpx
+    # via starlette
 async-timeout==4.0.3
+    # via aiohttp
+    # via asyncpg
 asyncpg==0.29.0
+    # via honeypot-backend
 attrs==23.2.0
+    # via aiohttp
 certifi==2023.11.17
+    # via httpcore
+    # via httpx
 cfgv==3.4.0
+    # via pre-commit
 click==8.1.7
+    # via uvicorn
 colorama==0.4.6
+    # via click
+    # via loguru
 distlib==0.3.7
+    # via virtualenv
 exceptiongroup==1.1.3
+    # via anyio
 expression==2.2.0
+    # via aioreactive
 fastapi==0.103.2
+    # via fastapi-injector
+    # via honeypot-backend
 fastapi-injector==0.5.3
+    # via honeypot-backend
 filelock==3.13.1
+    # via virtualenv
 frozenlist==1.4.1
+    # via aiohttp
+    # via aiosignal
 greenlet==3.0.1
+    # via sqlalchemy
 h11==0.14.0
+    # via httpcore
+    # via uvicorn
 httpcore==1.0.2
+    # via httpx
 httpx==0.26.0
+    # via honeypot-backend
 identify==2.5.31
+    # via pre-commit
 idna==3.4
+    # via anyio
+    # via httpx
+    # via yarl
 importlib-metadata==6.8.0
+    # via yapf
 injector==0.21.0
+    # via fastapi-injector
+    # via honeypot-backend
 loguru==0.7.2
+    # via honeypot-backend
 multidict==6.0.4
+    # via aiohttp
+    # via yarl
 nodeenv==1.8.0
+    # via pre-commit
 platformdirs==3.11.0
+    # via virtualenv
+    # via yapf
 pre-commit==3.5.0
 pydantic==2.5.1
+    # via fastapi
+    # via honeypot-backend
+    # via pydantic-settings
+    # via pydantic-xml
+    # via sqlmodel
 pydantic-core==2.14.3
+    # via pydantic
 pydantic-settings==2.0.3
+    # via honeypot-backend
 pydantic-xml==2.3.0
+    # via honeypot-backend
 python-dotenv==1.0.0
+    # via pydantic-settings
 pyyaml==6.0.1
+    # via pre-commit
 ruff==0.1.5
 sniffio==1.3.0
+    # via anyio
+    # via httpx
 sqlalchemy==2.0.23
-sqlmodel==0.0.14
+    # via honeypot-backend
+    # via sqlmodel
+sqlmodel==0.0.16
+    # via honeypot-backend
 starlette==0.27.0
+    # via fastapi
 tomli==2.0.1
+    # via yapf
 typing-extensions==4.8.0
+    # via aiodocker
+    # via aioreactive
+    # via expression
+    # via fastapi
+    # via pydantic
+    # via pydantic-core
+    # via sqlalchemy
+    # via uvicorn
 uvicorn==0.23.2
+    # via honeypot-backend
 virtualenv==20.24.6
+    # via pre-commit
 websockets==11.0.3
+    # via honeypot-backend
 win32-setctime==1.1.0
+    # via loguru
 yapf==0.40.2
 yarl==1.9.4
+    # via aiohttp
 zipp==3.17.0
+    # via importlib-metadata
 # The following packages are considered to be unsafe in a requirements file:
 setuptools==68.2.2
+    # via nodeenv

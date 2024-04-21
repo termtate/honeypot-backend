@@ -18,7 +18,7 @@ dependencies = [
     "asyncpg>=0.28.0",
     "pydantic>=2.4.2",
     "fastapi-injector>=0.5.3",
-    "sqlmodel>=0.0.14",
+    "sqlmodel>=0.0.16",
     "aiodocker>=0.21.0",
     "httpx>=0.26.0",
 ]
@@ -33,28 +33,15 @@ build-backend = "hatchling.build"
 ignore-init-module-imports = true
 line-length = 79
 
-[tool.yapf]
-based_on_style = "pep8"
-arithmetic_precedence_indication = true
-coalesce_brackets = true
-dedent_closing_brackets = true
-BLANK_LINE_BEFORE_NESTED_CLASS_OR_DEF = false
-SPLIT_BEFORE_FIRST_ARGUMENT = true
-COLUMN_LIMIT = 79
-
 [tool.rye]
 managed = true
 dev-dependencies = [
     "ruff>=0.1.5",
-    "yapf>=0.40.2",
     "pre-commit>=3.5.0",
 ]
 
 [tool.rye.scripts]
 server = { cmd = "python -m uvicorn main:app --host 0.0.0.0 --port 8000 --lifespan on", env = { PYTHONPATH = "./src/"} }
-lint = { chain = [ "lint:ruff", "lint:yapf" ] }
-"lint:ruff" = "ruff check src --fix"
-"lint:yapf" = "yapf -i -r src"
 
 create-tables = "python src/create_tables.py"
 drop-tables = "python src/drop_tables.py"
