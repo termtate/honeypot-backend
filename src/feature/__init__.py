@@ -5,11 +5,13 @@ from .utils.lifespan_scope import (
     lifespan_scope as lifespan_scope,
 )
 from fastapi import APIRouter
+from .docker import router as docker_router
 from .conpot import Conpot
 from .honeyd import Honeyd
 from .kippo import Kippo
 from .real_honeypot import RealHoneypot
 from .webtrap import Webtrap
+
 
 all_honeypots: list[Type[Honeypot]] = [
     Conpot,
@@ -29,3 +31,6 @@ honeypot_routers = [honeypot.router for honeypot in all_honeypots]
 api_router = APIRouter()
 for router in honeypot_routers:
     api_router.include_router(router)
+
+
+api_router.include_router(docker_router)

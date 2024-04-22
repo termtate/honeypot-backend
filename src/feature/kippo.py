@@ -16,7 +16,7 @@ class DBModel(Model, table=True):
 
 
 class Kippo(Honeypot[Model, DBModel], DockerMixin):
-    router = APIRouter(prefix="/kippo_attacks", tags=["kippo"])
+    router = APIRouter(prefix="/kippo", tags=["kippo"])
     attack_model = Model
     db_model = DBModel
 

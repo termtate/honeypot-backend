@@ -23,32 +23,32 @@ class HoneypotDocker(Protocol):
 
     async def start_container(self, client: AsyncClient):
         await client.post(
-            f"{self.docker_base_url}/v1.43/containers/{self.config['container_name']}/start"
+            f"{self.docker_base_url}/containers/{self.config['container_name']}/start"
         )
 
     async def pause_container(self, client: AsyncClient):
         await client.post(
-            f"{self.docker_base_url}/v1.43/containers/{self.config['container_name']}/pause"
+            f"{self.docker_base_url}/containers/{self.config['container_name']}/pause"
         )
 
     async def unpause_container(self, client: AsyncClient):
         await client.post(
-            f"{self.docker_base_url}/v1.43/containers/{self.config['container_name']}/unpause"
+            f"{self.docker_base_url}/containers/{self.config['container_name']}/unpause"
         )
 
     async def stop_container(self, client: AsyncClient):
         await client.post(
-            f"{self.docker_base_url}/v1.43/containers/{self.config['container_name']}/stop"
+            f"{self.docker_base_url}/containers/{self.config['container_name']}/stop"
         )
 
     async def kill_container(self, client: AsyncClient):
         await client.post(
-            f"{self.docker_base_url}/v1.43/containers/{self.config['container_name']}/kill"
+            f"{self.docker_base_url}/containers/{self.config['container_name']}/kill"
         )
 
     async def restart_container(self, client: AsyncClient):
         await client.post(
-            f"{self.docker_base_url}/v1.43/containers/{self.config['container_name']}/restart"
+            f"{self.docker_base_url}/containers/{self.config['container_name']}/restart"
         )
 
     async def container_stats(

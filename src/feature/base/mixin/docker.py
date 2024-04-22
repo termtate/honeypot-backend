@@ -96,11 +96,11 @@ class Route:
         }
         if states == ("all",):
             for state in mapping:
-                self.docker.router.post(f"/{state}_docker")(mapping[state])
+                self.docker.router.post(f"/{state}_container")(mapping[state])
 
         else:
             for state in set(states):
-                self.docker.router.post(f"/{state}_docker")(mapping[state])
+                self.docker.router.post(f"/{state}_container")(mapping[state])
 
     def configure_get_container_state(self):
         ContainerManager = cast(

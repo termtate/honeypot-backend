@@ -21,7 +21,7 @@ class DBModel(Model, table=True):
 
 
 class RealHoneypot(Honeypot[Model, DBModel]):
-    router = APIRouter(prefix="/real_honeypot_attacks", tags=["real_honeypot"])
+    router = APIRouter(prefix="/real_honeypot", tags=["real_honeypot"])
     attack_model = Model
     db_model = DBModel
 

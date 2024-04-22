@@ -28,7 +28,7 @@ class DBModel(Model, table=True):
 
 
 class Webtrap(Honeypot[Model, DBModel], DockerMixin):
-    router = APIRouter(prefix="/webtrap_attacks", tags=["webtrap"])
+    router = APIRouter(prefix="/webtrap", tags=["webtrap"])
     attack_model = Model
     db_model = DBModel
 

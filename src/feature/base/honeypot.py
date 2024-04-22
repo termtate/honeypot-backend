@@ -211,7 +211,7 @@ class _Honeypot(Protocol[TModel, TDBModel]):
     @classmethod
     @property
     @cache
-    def Websocket(cls):
+    def Websocket(cls: Type["Honeypot"]):
         """
         用于管理websocket连接的类
         """
@@ -219,7 +219,7 @@ class _Honeypot(Protocol[TModel, TDBModel]):
         @singleton
         @inject_constructor
         class _Websocket(WebsocketManager):
-            source: cls.Source  # type: ignore
+            source: DataSource[cls.db_model]
             logger: Logger
 
         return _Websocket
@@ -228,17 +228,17 @@ class _Honeypot(Protocol[TModel, TDBModel]):
     def bind_class_types(cls: Type["Honeypot"], binder: Binder):
         binder.bind(
             CRUDWithSession[cls.db_model],
-            ClassProvider(cls.CRUD),  # type: ignore
+            ClassProvider(cls.CRUD),
             scope=request_scope,
         )
         binder.bind(
             DataSource[cls.db_model],
-            ClassProvider(cls.Source),  # type: ignore
+            ClassProvider(cls.Source),
             scope=request_scope,
         )
         binder.bind(
             WebsocketManager[cls.db_model],
-            ClassProvider(cls.Websocket),  # type: ignore
+            ClassProvider(cls.Websocket),
         )
 
 
@@ -254,7 +254,6 @@ class MixinConfiger(type(Protocol)):
         for b in __bases:
             if issubclass(b, Mixin):
                 cls._mixins[__name].append(b)
-                # b.configure_mixin(cls)
 
         return super().__new__(cls, __name, __bases, __namespace)
 
