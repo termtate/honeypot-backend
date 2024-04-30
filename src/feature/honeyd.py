@@ -1,8 +1,8 @@
 from typing import Annotated, Literal
-from db.models import Base, Field
+from db.models import ModelBase, Field
 from datetime import datetime
 from .base import Honeypot, APIRouter
-
+from schema.base import Schema
 from pydantic import BeforeValidator, ConfigDict, ValidationError
 from pydantic_xml import BaseXmlModel, element
 from schema import Socket
@@ -37,7 +37,7 @@ class XmlModel(BaseXmlModel, tag="Root"):
     dest_ip: str = element(tag="ip_dst")
 
 
-class Model(Base):
+class Model(Schema):
     symbol: int
     alert_type: int
     subtype: int
@@ -56,10 +56,8 @@ class Model(Base):
         return cls.model_validate(XmlModel.from_xml(content))
 
 
-class DBModel(Model, table=True):
+class DBModel(Model, ModelBase, table=True):
     __tablename__: str = "honeyd"
-
-    id: int | None = Field(default=None, primary_key=True, unique=True)
 
 
 class Honeyd(Honeypot[Model, DBModel], DockerMixin):

@@ -15,7 +15,7 @@ from pydantic import ValidationError
 from expression import curry
 from source.base import DataSource
 from logger import Logger
-from db.models import Base
+from db.models import ModelBase
 
 T = TypeVar("T")
 TException = TypeVar("TException", bound=Exception)
@@ -58,7 +58,7 @@ async def start_server(
         await server.serve_forever()
 
 
-TS = TypeVar("TS", bound=Base)
+TS = TypeVar("TS", bound=ModelBase)
 
 
 class SocketSource(DataSource[TS], Protocol[TS]):

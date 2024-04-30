@@ -1,4 +1,6 @@
-from typing import Protocol, Literal, Final, TypedDict
+from __future__ import annotations
+
+from typing import Protocol, Literal, Final, TypedDict, TypeAlias
 from httpx import AsyncClient
 from pydantic import BaseModel, ConfigDict, Field
 from expression import pipe
@@ -17,38 +19,25 @@ class ContainerInfo(BaseModel):
     state: ContainerState
 
 
+DockerState: TypeAlias = Literal[
+    "start",
+    "stop",
+    "pause",
+    "unpause",
+    "kill",
+    "restart",
+]
+
+
 class HoneypotDocker(Protocol):
     docker_base_url: Final = str(setting.DOCKER_REMOTE_API_URL)
-    config: "DockerConfig"
+    config: DockerConfig
 
-    async def start_container(self, client: AsyncClient):
+    async def configure_docker_state(
+        self, client: AsyncClient, state: DockerState
+    ):
         await client.post(
-            f"{self.docker_base_url}/containers/{self.config['container_name']}/start"
-        )
-
-    async def pause_container(self, client: AsyncClient):
-        await client.post(
-            f"{self.docker_base_url}/containers/{self.config['container_name']}/pause"
-        )
-
-    async def unpause_container(self, client: AsyncClient):
-        await client.post(
-            f"{self.docker_base_url}/containers/{self.config['container_name']}/unpause"
-        )
-
-    async def stop_container(self, client: AsyncClient):
-        await client.post(
-            f"{self.docker_base_url}/containers/{self.config['container_name']}/stop"
-        )
-
-    async def kill_container(self, client: AsyncClient):
-        await client.post(
-            f"{self.docker_base_url}/containers/{self.config['container_name']}/kill"
-        )
-
-    async def restart_container(self, client: AsyncClient):
-        await client.post(
-            f"{self.docker_base_url}/containers/{self.config['container_name']}/restart"
+            f"{self.docker_base_url}/containers/{self.config['container_name']}/{state}"
         )
 
     async def container_stats(

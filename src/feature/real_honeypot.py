@@ -1,10 +1,10 @@
-from db.models import Base, Field
+from db.models import ModelBase, Field
 from datetime import datetime
-
+from schema.base import Schema
 from .base import Honeypot, APIRouter
 
 
-class Model(Base):
+class Model(Schema):
     time: datetime
     protocol: str = Field(schema_extra={"examples": ["ICMP", "TCP", "UDP"]})
     source_port: int | None
@@ -14,10 +14,8 @@ class Model(Base):
     content: str
 
 
-class DBModel(Model, table=True):
+class DBModel(Model, ModelBase, table=True):
     __tablename__: str = "real_honeypot"
-
-    id: int | None = Field(default=None, primary_key=True, unique=True)
 
 
 class RealHoneypot(Honeypot[Model, DBModel]):

@@ -1,12 +1,11 @@
-from typing_extensions import Self
-from sqlmodel import SQLModel
+from sqlmodel import SQLModel, Field
+from datetime import datetime
 
 
-class Base(SQLModel):
+class ModelBase(SQLModel):
     """
     数据库 orm基类
     """
 
-    @classmethod
-    def from_str(cls, content: str | bytes) -> Self:
-        return cls.model_validate_json(content)
+    id: int | None = Field(default=None, primary_key=True, unique=True)
+    time: datetime = Field(default_factory=datetime.now)

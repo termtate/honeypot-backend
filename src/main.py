@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 from injector import Injector
 from core import setting
@@ -46,6 +47,14 @@ def make_app(injector: Injector) -> FastAPI:
 # https://injector.readthedocs.io/en/latest/terminology.html#injector
 injector = Injector([LoggerModule(), DBModule()] + honeypot_binds)
 app = make_app(injector)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # if __name__ == "__main__":
 #     import uvicorn

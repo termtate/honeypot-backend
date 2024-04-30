@@ -16,7 +16,7 @@ class Settings(BaseSettings):
         # path="test"  # 哪个数据库
     )
 
-    DOCKER_REMOTE_API_URL: str = ""
+    DOCKER_REMOTE_API_URL: str = "http://localhost:2375"
 
 
 setting = Settings()

@@ -1,18 +1,17 @@
-from db.models import Base
+from db.models import ModelBase
 from datetime import datetime
-from .base import Honeypot, APIRouter, Field
+from .base import Honeypot, APIRouter
 from .base.mixin.docker import DockerMixin
+from schema.base import Schema
 
 
-class Model(Base):
+class Model(Schema):
     content: str
     time: datetime
 
 
-class DBModel(Model, table=True):
+class DBModel(Model, ModelBase, table=True):
     __tablename__: str = "kippo"
-
-    id: int | None = Field(default=None, primary_key=True, unique=True)
 
 
 class Kippo(Honeypot[Model, DBModel], DockerMixin):

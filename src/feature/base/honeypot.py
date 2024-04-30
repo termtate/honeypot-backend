@@ -10,7 +10,7 @@ from typing import (
 from collections import defaultdict
 from typing_extensions import override
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
-from db.models import Base
+from db.models import ModelBase
 from functools import cache
 from db.crud import CRUDWithSession, CRUDBase
 from ..utils import inject_constructor, lifespan_scope, WebsocketManager
@@ -20,9 +20,10 @@ from injector import Binder, ClassProvider, singleton
 from source.base import DataSource
 from logger import Logger
 from .mixin.base import Mixin
+from schema.base import Schema
 
-TModel = TypeVar("TModel", bound=Base, covariant=True)
-TDBModel = TypeVar("TDBModel", bound=Base)
+TModel = TypeVar("TModel", bound=Schema, covariant=True)
+TDBModel = TypeVar("TDBModel", bound=ModelBase)
 
 TCRUD = TypeVar("TCRUD", bound=CRUDWithSession)
 
@@ -58,7 +59,8 @@ class Route:
                 self.honeypot.Source  # type: ignore
             ),
         ) -> TDBModel:
-            return await source.add(cast(TDBModel, attack))
+            a = self.honeypot.db_model.model_validate(attack)
+            return await source.add(cast(TDBModel, a))
 
         return default_create_attack
 
@@ -124,12 +126,12 @@ class _Honeypot(Protocol[TModel, TDBModel]):
     """
     创建一个属于这个蜜罐的fastapi的router，可以在这里配置这个router的前缀等
     """
-    attack_model: ClassVar[Type[Base]]
+    attack_model: ClassVar[Type[Schema]]
     """
     因为[PEP 526](https://www.python.org/dev/peps/pep-0526/#class-and-instance-variable-annotations)的限制，
     ClassVar内不能有泛型，没办法做静态检查，所以这里一定要确保`database_model`的值和泛型的类型`Type[T]`一致
     """
-    db_model: ClassVar[Type[Base]]
+    db_model: ClassVar[Type[ModelBase]]
     """
     表示数据库表的一个类，通常只需要继承上面的`attack_model`并且加一个`id`字段就可以
     >>> from sqlmodel import Field

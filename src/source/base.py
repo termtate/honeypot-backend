@@ -3,12 +3,12 @@ from aioreactive import AsyncSubject
 from contextlib import AbstractContextManager
 from typing import AsyncIterator, Protocol, Type, TypeVar, overload
 from collections.abc import AsyncIterable
-from db.models import Base
+from db.models import ModelBase
 from logger import Logger
 from aioreactive import AsyncIteratorObserver
 from db.crud import CRUDWithSession
 
-T = TypeVar("T", bound=Base)
+T = TypeVar("T", bound=ModelBase)
 
 
 class DataSource(AsyncIterable[T], AbstractContextManager, Protocol[T]):

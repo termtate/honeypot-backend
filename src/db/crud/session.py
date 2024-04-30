@@ -1,9 +1,7 @@
 from typing import AsyncIterator, TypeVar, Protocol
-from .base import Base
-from schema.base import Schema
+from .base import ModelBase
 
-_TS = TypeVar("_TS", bound=Schema, contravariant=True)
-_TM = TypeVar("_TM", bound=Base)
+_TM = TypeVar("_TM", bound=ModelBase)
 
 
 class CRUDSession(Protocol[_TM]):

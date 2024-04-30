@@ -34,3 +34,8 @@ for router in honeypot_routers:
 
 
 api_router.include_router(docker_router)
+
+
+@api_router.get("/honeypots", tags=["total"])
+async def honeypots() -> list[str]:
+    return [_.prefix[1:] for _ in honeypot_routers]

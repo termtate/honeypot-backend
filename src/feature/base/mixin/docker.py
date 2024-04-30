@@ -4,6 +4,7 @@ from functools import cache
 from .base import Mixin
 from httpx import AsyncClient
 from docker.manager import DockerManager
+from docker.base import DockerState
 from typing import (
     Callable,
     ClassVar,
@@ -83,24 +84,35 @@ class Route:
             Type[DockerManager],
             self.docker.ContainerManager,  # type: ignore
         )
-        mapping = {
-            k: self._with_docker_manager_parameter_in(v)
-            for k, v in {
-                "start": ContainerManager.start_container,
-                "stop": ContainerManager.stop_container,
-                "pause": ContainerManager.pause_container,
-                "unpause": ContainerManager.unpause_container,
-                "restart": ContainerManager.restart_container,
-                "kill": ContainerManager.kill_container,
-            }.items()
-        }
+
+        state: DockerState
+
         if states == ("all",):
-            for state in mapping:
-                self.docker.router.post(f"/{state}_container")(mapping[state])
+            for state in (
+                "start",
+                "stop",
+                "pause",
+                "unpause",
+                "kill",
+                "restart",
+            ):
+                self.docker.router.post(f"/{state}_container")(
+                    self._with_docker_manager_parameter_in(
+                        lambda m, c: ContainerManager.configure_docker_state(
+                            m, c, state
+                        )
+                    )
+                )
 
         else:
             for state in set(states):
-                self.docker.router.post(f"/{state}_container")(mapping[state])
+                self.docker.router.post(f"/{state}_container")(
+                    self._with_docker_manager_parameter_in(
+                        lambda m, c: ContainerManager.configure_docker_state(
+                            m, c, state
+                        )
+                    )
+                )
 
     def configure_get_container_state(self):
         ContainerManager = cast(
@@ -108,7 +120,7 @@ class Route:
             self.docker.ContainerManager,  # type: ignore
         )
         self.docker.router.get(
-            "/docker_state",
+            "/container_state",
             response_model=Literal["running", "stopped", "paused"],
         )(
             self._with_docker_manager_parameter_in(

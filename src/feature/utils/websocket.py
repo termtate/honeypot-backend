@@ -8,9 +8,9 @@ from core import setting
 import aioreactive as rx
 import asyncio
 from typing import Protocol, TypeVar
-from db.models import Base
+from db.models import ModelBase
 
-T = TypeVar("T", bound=Base)
+T = TypeVar("T", bound=ModelBase)
 
 
 def buffer(interval: int):

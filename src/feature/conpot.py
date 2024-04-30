@@ -1,13 +1,14 @@
-from db.models import Base, Field
+from db.models import ModelBase, Field
 from datetime import datetime
 
 from .base import Honeypot, APIRouter
 from .base.mixin.docker import DockerMixin
 from fastapi_injector import Injected
 from db.crud import CRUDWithSession
+from schema.base import Schema
 
 
-class Model(Base):
+class Model(Schema):
     request: str
     slave_id: int
     function_code: int
@@ -16,7 +17,7 @@ class Model(Base):
     session_id: str
 
 
-class DBModel(Model, table=True):
+class DBModel(Model, ModelBase, table=True):
     __tablename__: str = "conpot"
 
     id: int | None = Field(default=None, primary_key=True, unique=True)

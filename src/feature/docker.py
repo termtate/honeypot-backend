@@ -1,14 +1,38 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, TypeAdapter, ConfigDict, computed_field
 from fastapi import APIRouter
 import httpx
-from typing import Any, Literal
+from typing import Any, Literal, TypeVar, Type, Generic
 from core import setting
+from expression import curry
+from collections.abc import Sequence
+
+T = TypeVar("T")
+TL = TypeVar("TL", bound=Sequence)
 
 
-async def get(path):
+class Response(BaseModel, Generic[TL]):
+    model_config = ConfigDict(arbitrary_types_allowed=True)
+    list: TL
+
+    @computed_field
+    def total(self) -> int:
+        return len(self.list)
+
+
+@curry(1)
+async def get(type: Type[T], path) -> T:
     async with httpx.AsyncClient() as client:
         res = await client.get(f"{setting.DOCKER_REMOTE_API_URL}{path}")
-        return res.content
+        match type:
+            case BaseModel():
+                return type.model_validate_json(res.content)
+            case _:
+                return TypeAdapter(type).validate_json(res.content)
+
+
+@curry(1)
+async def get_list(type: Type[TL], path) -> Response[TL]:
+    return Response(list=await get(type)(path))
 
 
 class Port(BaseModel):
@@ -29,7 +53,7 @@ class Container(BaseModel):
     State: str
     Status: str
     Ports: list[Port]
-    Labels: dict[str, str]
+    Labels: dict[str, str] | None
     SizeRw: int
     SizeRootFs: int
     HostConfig: dict[str, str]
@@ -40,24 +64,24 @@ class Container(BaseModel):
 router = APIRouter(prefix="/docker", tags=["docker"])
 
 
-@router.get("/containers", response_model=list[Container])
-async def all_containers():
-    return await get("/containers/json")
+@router.get("/containers")
+async def all_containers() -> Response[list[Container]]:
+    return await get_list(list[Container])("/containers/json")
 
 
 class Image(BaseModel):
     Id: str
     ParentId: str
     RepoTags: list[str]
-    RepoDigests: list[str]
-    Created: str
+    RepoDigests: list[str] | None
+    Created: int
     Size: int
     SharedSize: int
     VirtualSize: int | None
-    Labels: dict[str, str]
+    Labels: dict[str, str] | None
     Containers: int
 
 
-@router.get("/images", response_model=list[Image])
-async def all_images():
-    return await get("/images/json")
+@router.get("/images")
+async def all_images() -> Response[list[Image]]:
+    return await get_list(list[Image])("/images/json")

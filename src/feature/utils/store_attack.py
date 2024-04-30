@@ -5,9 +5,9 @@ from injector import Injector
 from logger import Logger
 from fastapi_injector import RequestScopeFactory
 from expression import curry_flipped
-from db.models.base import Base
+from db.models.base import ModelBase
 
-TM = TypeVar("TM", bound=Base)
+TM = TypeVar("TM", bound=ModelBase)
 
 
 @curry_flipped(1)
