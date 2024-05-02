@@ -26,17 +26,22 @@ class DBModel(Model, ModelBase, table=True):
     __tablename__: str = "webtrap"
 
 
-class Webtrap(Honeypot[Model, DBModel], DockerMixin):
-    router = APIRouter(prefix="/webtrap", tags=["webtrap"])
+router = APIRouter(prefix="/webtrap", tags=["webtrap"])
+
+
+class Webtrap(Honeypot[Model, DBModel]):
+    router = router
     attack_model = Model
     db_model = DBModel
 
-    docker_config = {"container_name": "webtrap"}
-
-    @staticmethod
-    def configure_docker_routes(route):
-        route.configure_change_container_state("all")
-        route.configure_get_container_state()
+    docker_config = DockerMixin(
+        router,
+        config={"container_name": "webtrap"},
+        routes=lambda r: [
+            r.configure_change_container_state("all"),
+            r.configure_get_container_state(),
+        ],
+    )
 
     @staticmethod
     def configure_routes(route) -> None:

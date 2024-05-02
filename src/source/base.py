@@ -1,28 +1,37 @@
 import asyncio
 from aioreactive import AsyncSubject
-from contextlib import AbstractContextManager
-from typing import AsyncIterator, Protocol, Type, TypeVar, overload
+from contextlib import AbstractAsyncContextManager
+from typing import (
+    Any,
+    AsyncIterator,
+    Type,
+    TypeVar,
+    overload,
+    Generic,
+    Callable,
+    NoReturn,
+    Coroutine,
+)
 from collections.abc import AsyncIterable
 from db.models import ModelBase
-from logger import Logger
+from loguru import logger
 from aioreactive import AsyncIteratorObserver
-from db.crud import CRUDWithSession
+from typing_extensions import Self
 
 T = TypeVar("T", bound=ModelBase)
 
 
-class DataSource(AsyncIterable[T], AbstractContextManager, Protocol[T]):
-    schema: Type[T]
-    stream: AsyncSubject[T] = AsyncSubject()
-    task: asyncio.Task | None = None
-    logger: Logger
-    crud: CRUDWithSession[T]
-
-    async def receive_data_forever(self):
-        """
-        循环接收数据，在方法中调用self.add()将数据保存到流中
-        """
-        ...
+class DataSource(Generic[T], AsyncIterable[T], AbstractAsyncContextManager):
+    def __init__(
+        self,
+        schema: Type[T],
+        receive_data: Callable[[Self], Coroutine[Any, Any, NoReturn | None]]
+        | None = None,
+    ) -> None:
+        self.schema = schema
+        self.stream = AsyncSubject[T]()
+        self.task: asyncio.Task | None = None
+        self.receive_data_forever = receive_data
 
     @overload
     async def add(self, data: T) -> T:
@@ -35,29 +44,28 @@ class DataSource(AsyncIterable[T], AbstractContextManager, Protocol[T]):
     async def add(self, data: str | bytes | T):
         match data:
             case str() | bytes():
-                self.logger.info(f"received data {data!r}")
+                logger.info(f"received data {data!r}")
                 a = self.schema.from_str(data)
                 await self.stream.asend(a)
-                await self.crud.create(a)
                 return a
             case _:
                 await self.stream.asend(data)
-                await self.crud.create(data)
                 return data
 
     def open_connection(self):
-        self.task = asyncio.create_task(self.receive_data_forever())
+        if self.receive_data_forever:
+            self.task = asyncio.create_task(self.receive_data_forever(self))
 
     def close_connection(self):
-        assert self.task is not None, "还未打开连接"
-        self.task.cancel()
-        self.task = None
+        if self.task:
+            self.task.cancel()
+            self.task = None
 
-    def __enter__(self):
+    async def __aenter__(self):
         self.open_connection()
         return self
 
-    def __exit__(self, __exc_type, __exc_value, __traceback) -> bool | None:
+    async def __aexit__(self, *args) -> bool | None:
         self.close_connection()
 
     def __aiter__(self) -> AsyncIterator[T]:

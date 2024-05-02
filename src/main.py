@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from contextlib import asynccontextmanager
+from contextlib import asynccontextmanager, AsyncExitStack
 from injector import Injector
 from core import setting
 from fastapi_injector import (
@@ -8,30 +8,25 @@ from fastapi_injector import (
     InjectorMiddleware,
     RequestScopeOptions,
 )
-from logger import LoggerModule
 from db import DBModule
 from feature import (
-    honeypot_binds,
-    LifespanScope,
-    lifespan_scope,
     api_router,
-    all_honeypots,
+    configure_main,
+    configure_routes,
+    lifespan_events,
 )
-from source.base import DataSource
 
 
 # https://fastapi.tiangolo.com/zh/advanced/events/#lifespan
 @asynccontextmanager
 async def lifespan(app: FastAPI, injector: Injector):
-    scope = injector.get(LifespanScope)
-    lifespan_scope.start_startup_events(injector)
+    await configure_main(injector)
 
-    for honeypot in all_honeypots:
-        injector.get(DataSource[honeypot.db_model], scope=LifespanScope)
+    async with AsyncExitStack() as stack:
+        for event in lifespan_events:
+            await stack.enter_async_context(event)
 
-    yield
-
-    await scope.aclose()
+        yield
 
 
 # https://github.com/matyasrichter/fastapi-injector#usage
@@ -40,12 +35,14 @@ def make_app(injector: Injector) -> FastAPI:
 
     app.include_router(api_router, prefix=setting.API_V1_STR)
     app.add_middleware(InjectorMiddleware, injector=injector)
+
     attach_injector(app, injector, RequestScopeOptions(enable_cleanup=True))
     return app
 
 
 # https://injector.readthedocs.io/en/latest/terminology.html#injector
-injector = Injector([LoggerModule(), DBModule()] + honeypot_binds)
+injector = Injector([DBModule()])
+configure_routes()
 app = make_app(injector)
 
 app.add_middleware(

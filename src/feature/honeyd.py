@@ -1,13 +1,15 @@
 from typing import Annotated, Literal
 from db.models import ModelBase, Field
 from datetime import datetime
+from logger import logger
+from feature.main import MainAttackModel
 from .base import Honeypot, APIRouter
 from schema.base import Schema
 from pydantic import BeforeValidator, ConfigDict, ValidationError
 from pydantic_xml import BaseXmlModel, element
 from schema import Socket
 from .utils import start_server, catch
-from .base.mixin.docker import DockerMixin
+from .base.mixin import DockerMixin, MainStream
 
 Time = Annotated[
     datetime,
@@ -60,17 +62,33 @@ class DBModel(Model, ModelBase, table=True):
     __tablename__: str = "honeyd"
 
 
-class Honeyd(Honeypot[Model, DBModel], DockerMixin):
-    router = APIRouter(prefix="/honeyd", tags=["honeyd"])
+router = APIRouter(prefix="/honeyd", tags=["honeyd"])
+
+
+class Honeyd(Honeypot[Model, DBModel]):
+    router = router
     attack_model = Model
     db_model = DBModel
-
-    docker_config = {"container_name": "honeyd"}
-
-    @staticmethod
-    def configure_docker_routes(route):
-        route.configure_change_container_state("all")
-        route.configure_get_container_state()
+    docker_config = DockerMixin(
+        router,
+        config={"container_name": "honeyd"},
+        routes=lambda r: [
+            r.configure_change_container_state("all"),
+            r.configure_get_container_state(),
+        ],
+    )
+    main_stream_config = MainStream[DBModel](
+        lambda attack: MainAttackModel(
+            time=attack.time,
+            source_ip=attack.source_ip,
+            source_port=attack.source_port,
+            dest_ip=attack.dest_ip,
+            dest_port=attack.dest_port,
+            type="honeyd",
+            protocol=attack.protocol.lower(),
+            foreign_id=attack.id,
+        )
+    )
 
     @staticmethod
     def configure_routes(route) -> None:
@@ -81,11 +99,11 @@ class Honeyd(Honeypot[Model, DBModel], DockerMixin):
     @staticmethod
     async def receive_data_forever(source):
         socket = Socket(ip="localhost", port=8123)
-        source.logger.info(f"start listening socket on {socket}")
+        logger.info(f"start listening socket on {socket}")
         return await start_server(
             socket=socket,
             on_receive=catch(ValidationError)(source.add)(
-                on_exception=lambda e: source.logger.warning(
+                on_exception=lambda e: logger.warning(
                     f"validate error: {e.json(indent=2, include_url=False)}"
                 )
             ),

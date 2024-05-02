@@ -3,11 +3,11 @@ from expression import pipe
 from fastapi import WebSocket
 from pydantic import RootModel
 from source.base import DataSource
-from logger import Logger
+from loguru import logger
 from core import setting
 import aioreactive as rx
 import asyncio
-from typing import Protocol, TypeVar
+from typing import TypeVar, Generic
 from db.models import ModelBase
 
 T = TypeVar("T", bound=ModelBase)
@@ -53,32 +53,9 @@ def buffer(interval: int):
     return _buffer
 
 
-class WebsocketManager(Protocol[T]):
-    """
-    1. 继承这个类
-    >>> @singleton
-    >>> @inject
-    >>> @dataclass
-    >>> class MyWebsocketManager(WebsocketManager[MySchema]):
-    >>>     source: MySource
-    >>>     logger: Logger
-
-    2. 在ws端口中使用
-    >>> @router.websocket("/ws")
-    >>> async def endpoint(
-    ...     websocket: WebSocket,
-    ...     subscribe: MyWebsocketManager = Injected(MyWebsocketManager)
-    ... ):
-    >>>     await websocket.accept()
-    ...
-    >>>     with subscribe(websocket):
-    >>>         with contextlib.suppress(WebSocketDisconnect):
-    >>>             while True:
-    >>>                 await websocket.receive_text()
-    """
-
-    source: DataSource[T]
-    logger: Logger
+class WebsocketManager(Generic[T]):
+    def __init__(self, source: DataSource[T]) -> None:
+        self.source = source
 
     async def receive(self, websocket: WebSocket):
         buffered_stream = await pipe(
@@ -91,7 +68,7 @@ class WebsocketManager(Protocol[T]):
                 [RootModel[T](attack).model_dump_json() for attack in attacks]
             )
             await websocket.send_text(text)
-            self.logger.info(f"send attack to {websocket}")
+            logger.info(f"send attack to {websocket}")
 
     @contextmanager
     def __call__(self, websocket: WebSocket):

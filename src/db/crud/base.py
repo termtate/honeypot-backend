@@ -1,9 +1,8 @@
 from datetime import datetime
-from sqlmodel.ext.asyncio.session import AsyncSession
+from sqlalchemy.ext.asyncio.session import AsyncSession
 from sqlmodel import select, col
-from typing import AsyncIterator, ClassVar, Type, TypeVar, Generic, Protocol
+from typing import AsyncIterator, Type, TypeVar, Generic
 from db.models.base import ModelBase
-
 
 TModel = TypeVar("TModel", bound=ModelBase)
 
@@ -39,7 +38,9 @@ class CRUDBase(Generic[TModel]):
     async def get_by_time(
         self,
         session: AsyncSession,
-        from_date: datetime,
+        offset: int | None = None,
+        limit: int | None = None,
+        from_date: datetime | None = None,
         to_date: datetime | None = None,
     ):
         if to_date is None:
@@ -47,7 +48,13 @@ class CRUDBase(Generic[TModel]):
         stmt = (
             select(self.model)
             .order_by(col(self.model.time))
-            .where(from_date <= self.model.time <= to_date)
+            .where(
+                (from_date <= self.model.time) & (self.model.time <= to_date)
+                if from_date is not None
+                else self.model.time <= to_date
+            )
+            .offset(offset)
+            .limit(limit)
         )
 
         async for row in await session.stream_scalars(stmt):
@@ -58,31 +65,3 @@ class CRUDBase(Generic[TModel]):
         await session.flush()
         await session.refresh(model)
         return model
-
-
-class CRUDWithSession(Protocol[TModel]):
-    """
-    将`CRUDBase`的方法里的session参数提升到了构造参数，以便依赖注入
-
-    >>> @request_scope
-    >>> @inject_constructor
-    >>> class MyCRUD(CRUDWithSession[MyModel]):
-    >>>     crud = CRUDBase(MyModel)
-    >>>     session: AsyncSession
-    """
-
-    crud: ClassVar[CRUDBase]
-    session: AsyncSession
-
-    def get(
-        self,
-        offset: int | None = None,
-        limit: int | None = None,
-    ) -> AsyncIterator[TModel]:
-        return self.crud.get(self.session, offset, limit)
-
-    async def get_by_id(self, id: int) -> TModel | None:
-        return await self.crud.get_by_id(self.session, id)
-
-    async def create(self, model: TModel) -> TModel:
-        return await self.crud.create(self.session, model)

@@ -1,52 +1,41 @@
 from __future__ import annotations
-from functools import cache
 
-from .base import Mixin
 from httpx import AsyncClient
 from docker.manager import DockerManager
 from docker.base import DockerState
 from typing import (
+    Any,
     Callable,
-    ClassVar,
-    Protocol,
-    Type,
     Literal,
-    cast,
     overload,
     Awaitable,
 )
-from typing_extensions import Self
 from fastapi import APIRouter
-from feature.utils.lifespan_scope import lifespan_scope
 from fastapi_injector import Injected
+from ..lifespan_context import LifespanContext
 
 
-class DockerMixin(Mixin, Protocol):
-    docker_config: ClassVar[DockerManager.DockerConfig]
-    router: ClassVar[APIRouter]
+class DockerMixin(LifespanContext):
+    def __init__(
+        self,
+        router: APIRouter,
+        config: DockerManager.DockerConfig,
+        routes: Callable[[Route], Any] | None = None,
+    ) -> None:
+        self.router = router
+        self.docker_config = config
+        self.docker_manager = DockerManager(**config)
+        self.routes = routes
+        self.lifespan_events = {self.docker_manager}
 
-    @classmethod
-    @property
-    @cache
-    def ContainerManager(cls) -> Type[DockerManager]:
-        @lifespan_scope
-        class _ContainerManager(DockerManager):
-            config: ClassVar = cls.docker_config
-
-        return _ContainerManager
-
-    @classmethod
-    def configure_mixin(cls, honeypot: Type[Self]):
-        route = Route(honeypot)
-        honeypot.configure_docker_routes(route)
-
-    @staticmethod
-    def configure_docker_routes(route: Route):
-        raise NotImplementedError
+    def configure(self):
+        route = Route(self)
+        if self.routes:
+            self.routes(route)
 
 
 class Route:
-    def __init__(self, docker: Type[DockerMixin]) -> None:
+    def __init__(self, docker: DockerMixin) -> None:
         self.docker = docker
 
     def _with_docker_manager_parameter_in(
@@ -80,10 +69,7 @@ class Route:
         ...
 
     def configure_change_container_state(self, *states):
-        ContainerManager = cast(
-            Type[DockerManager],
-            self.docker.ContainerManager,  # type: ignore
-        )
+        manager = self.docker.docker_manager
 
         state: DockerState
 
@@ -96,34 +82,20 @@ class Route:
                 "kill",
                 "restart",
             ):
-                self.docker.router.post(f"/{state}_container")(
-                    self._with_docker_manager_parameter_in(
-                        lambda m, c: ContainerManager.configure_docker_state(
-                            m, c, state
-                        )
-                    )
-                )
+
+                @self.docker.router.post(f"/{state}_container")
+                async def container_state():
+                    return await manager.configure_docker_state(state)
 
         else:
             for state in set(states):
-                self.docker.router.post(f"/{state}_container")(
-                    self._with_docker_manager_parameter_in(
-                        lambda m, c: ContainerManager.configure_docker_state(
-                            m, c, state
-                        )
-                    )
-                )
+
+                @self.docker.router.post(f"/{state}_container")
+                async def container_state():
+                    return await manager.configure_docker_state(state)
 
     def configure_get_container_state(self):
-        ContainerManager = cast(
-            Type[DockerManager],
-            self.docker.ContainerManager,  # type: ignore
-        )
         self.docker.router.get(
             "/container_state",
             response_model=Literal["running", "stopped", "paused"],
-        )(
-            self._with_docker_manager_parameter_in(
-                ContainerManager.container_stats
-            )
-        )
+        )(self.docker.docker_manager.container_stats)

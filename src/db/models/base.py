@@ -8,4 +8,7 @@ class ModelBase(SQLModel):
     """
 
     id: int | None = Field(default=None, primary_key=True, unique=True)
-    time: datetime = Field(default_factory=datetime.now)
+    time: datetime = Field(
+        default_factory=datetime.now
+        # sa_column=Column(DateTime(timezone=True), nullable=False),
+    )

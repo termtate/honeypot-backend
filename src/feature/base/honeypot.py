@@ -4,63 +4,58 @@ from typing import (
     ClassVar,
     Type,
     TypeVar,
-    cast,
     runtime_checkable,
+    Generic,
 )
-from collections import defaultdict
-from typing_extensions import override
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 from db.models import ModelBase
 from functools import cache
-from db.crud import CRUDWithSession, CRUDBase
-from ..utils import inject_constructor, lifespan_scope, WebsocketManager
-from fastapi_injector import Injected, request_scope
-from sqlmodel.ext.asyncio.session import AsyncSession
-from injector import Binder, ClassProvider, singleton
+from db.crud import CRUDBase
+from db import AsyncSession
+from ..utils import WebsocketManager
+from fastapi_injector import Injected
 from source.base import DataSource
-from logger import Logger
-from .mixin.base import Mixin
 from schema.base import Schema
+from .mixin import DockerMixin, MainStream
+from contextlib import AbstractAsyncContextManager
+from .lifespan_context import LifespanContext
 
-TModel = TypeVar("TModel", bound=Schema, covariant=True)
+TModel = TypeVar("TModel", bound=Schema)
 TDBModel = TypeVar("TDBModel", bound=ModelBase)
 
-TCRUD = TypeVar("TCRUD", bound=CRUDWithSession)
 
-
-class Route:
-    def __init__(self, honeypot: Type["Honeypot"]) -> None:
+class Route(Generic[TModel, TDBModel]):
+    def __init__(self, honeypot: Type["Honeypot[TModel, TDBModel]"]) -> None:
         self.honeypot = honeypot
 
     def configure_get_attacks(self):
         @self.honeypot.router.get(
             "/",
-            response_model=list[self.honeypot._ResponseModel],  # type: ignore
+            response_model=list[self.honeypot.db_model],
         )
         async def default_get_attacks(
             offset: int = 0,
             limit: int = 10,
-            crud: CRUDWithSession[TDBModel] = Injected(
-                self.honeypot.CRUD  # type: ignore
-            ),
+            session: AsyncSession = Injected(AsyncSession),
         ) -> list[TDBModel]:
-            return [attack async for attack in crud.get(offset, limit)]
+            return [
+                attack
+                async for attack in self.honeypot.crud.get(
+                    session, offset, limit
+                )
+            ]
 
         return default_get_attacks
 
     def configure_create_attack(self):
-        @self.honeypot.router.post(
-            "/",
-            response_model=self.honeypot._ResponseModel,  # type: ignore
-        )
+        @self.honeypot.router.post("/", response_model=self.honeypot.db_model)
         async def default_create_attack(
             attack: self.honeypot.attack_model,
-            source: DataSource[TDBModel] = Injected(
-                self.honeypot.Source  # type: ignore
-            ),
+            session: AsyncSession = Injected(AsyncSession),
         ) -> TDBModel:
             a = self.honeypot.db_model.model_validate(attack)
-            return await source.add(cast(TDBModel, a))
+            m = await self.honeypot.crud.create(session, a)
+            return await self.honeypot.source.add(m)
 
         return default_create_attack
 
@@ -72,13 +67,10 @@ class Route:
         @self.honeypot.router.websocket("/ws")
         async def _send_attack_info(
             websocket: WebSocket,
-            subscribe: WebsocketManager[TDBModel] = Injected(
-                self.honeypot.Websocket  # type: ignore
-            ),
         ):
             await websocket.accept()
 
-            with subscribe(websocket):
+            with self.honeypot.websocket_manager(websocket):
                 with contextlib.suppress(WebSocketDisconnect):
                     while True:
                         # 只需要捕获断连错误，不用处理客户端发来的文本
@@ -88,7 +80,7 @@ class Route:
 
 
 @runtime_checkable
-class _Honeypot(Protocol[TModel, TDBModel]):
+class Honeypot(LifespanContext, Protocol[TModel, TDBModel]):
     """
     因为编写一个蜜罐，所需的代码大多是相同的，所以编写了这个类，用来动态生成蜜罐的大部分功能
 
@@ -126,12 +118,9 @@ class _Honeypot(Protocol[TModel, TDBModel]):
     """
     创建一个属于这个蜜罐的fastapi的router，可以在这里配置这个router的前缀等
     """
-    attack_model: ClassVar[Type[Schema]]
-    """
-    因为[PEP 526](https://www.python.org/dev/peps/pep-0526/#class-and-instance-variable-annotations)的限制，
-    ClassVar内不能有泛型，没办法做静态检查，所以这里一定要确保`database_model`的值和泛型的类型`Type[T]`一致
-    """
-    db_model: ClassVar[Type[ModelBase]]
+    attack_model: ClassVar[Type[TModel]]  # type: ignore
+
+    db_model: ClassVar[Type[TDBModel]]  # type: ignore
     """
     表示数据库表的一个类，通常只需要继承上面的`attack_model`并且加一个`id`字段就可以
     >>> from sqlmodel import Field
@@ -141,21 +130,22 @@ class _Honeypot(Protocol[TModel, TDBModel]):
 
     """
 
+    docker_config: ClassVar[DockerMixin | None] = None
+    main_stream_config: ClassVar[MainStream[TDBModel] | None] = None
+
+    lifespan_events: ClassVar[set[AbstractAsyncContextManager]]
+
+    def __init_subclass__(cls) -> None:
+        cls.lifespan_events = set()
+
     @classmethod
     @property
     @cache
-    def _ResponseModel(cls: Type["Honeypot"]):
-        class ModelWithId(cls.attack_model):
-            id: int
-
-        return ModelWithId
+    def crud(cls) -> CRUDBase[TDBModel]:
+        return CRUDBase(cls.db_model)
 
     @classmethod
     def configure(cls):
-        cls.configure_honeypot()
-
-    @classmethod
-    def configure_honeypot(cls):
         route = Route(cls)
 
         cls.configure_routes(route)
@@ -167,22 +157,6 @@ class _Honeypot(Protocol[TModel, TDBModel]):
         """
         ...
 
-    @classmethod
-    @property
-    @cache
-    def CRUD(cls: Type["Honeypot"]):
-        """
-        生成的这个蜜罐的数据库CRUD类
-        """
-
-        @request_scope
-        @inject_constructor
-        class _CRUD(CRUDWithSession[cls.db_model]):
-            crud = CRUDBase(cls.db_model)
-            session: AsyncSession
-
-        return _CRUD
-
     @staticmethod
     async def receive_data_forever(source: DataSource[TDBModel]):
         """
@@ -193,77 +167,22 @@ class _Honeypot(Protocol[TModel, TDBModel]):
     @classmethod
     @property
     @cache
-    def Source(cls: Type["Honeypot"]):
+    def source(cls: Type["Honeypot"]) -> DataSource[TDBModel]:
         """
         生成的这个蜜罐的`DataSource`类，这个类里面有一个`stream`流，可以订阅这个流，在蜜罐每次接收一个attack时收到这个attack
         """
-
-        @lifespan_scope
-        @inject_constructor
-        class _Source(DataSource[cls.db_model]):
-            schema = cls.db_model
-            logger: Logger
-            crud: CRUDWithSession[cls.db_model]
-
-            async def receive_data_forever(self):
-                return await cls.receive_data_forever(self)
-
-        return _Source
+        source = DataSource(
+            cls.db_model, receive_data=cls.receive_data_forever
+        )
+        cls.lifespan_events.add(source)
+        return source
 
     @classmethod
     @property
     @cache
-    def Websocket(cls: Type["Honeypot"]):
+    def websocket_manager(cls) -> WebsocketManager[TDBModel]:
         """
         用于管理websocket连接的类
         """
 
-        @singleton
-        @inject_constructor
-        class _Websocket(WebsocketManager):
-            source: DataSource[cls.db_model]
-            logger: Logger
-
-        return _Websocket
-
-    @classmethod
-    def bind_class_types(cls: Type["Honeypot"], binder: Binder):
-        binder.bind(
-            CRUDWithSession[cls.db_model],
-            ClassProvider(cls.CRUD),
-            scope=request_scope,
-        )
-        binder.bind(
-            DataSource[cls.db_model],
-            ClassProvider(cls.Source),
-            scope=request_scope,
-        )
-        binder.bind(
-            WebsocketManager[cls.db_model],
-            ClassProvider(cls.Websocket),
-        )
-
-
-class MixinConfiger(type(Protocol)):
-    _mixins: ClassVar[dict[str, list[Type[Mixin]]]] = defaultdict(list)
-
-    def __new__(
-        cls,
-        __name,
-        __bases,
-        __namespace,
-    ):
-        for b in __bases:
-            if issubclass(b, Mixin):
-                cls._mixins[__name].append(b)
-
-        return super().__new__(cls, __name, __bases, __namespace)
-
-
-class Honeypot(_Honeypot[TModel, TDBModel], Protocol, metaclass=MixinConfiger):
-    @override
-    @classmethod
-    def configure(cls):
-        for mixin in cls._mixins[cls.__name__]:
-            mixin.configure_mixin(cast(Type[Mixin], cls))
-        return super().configure()
+        return WebsocketManager(cls.source)

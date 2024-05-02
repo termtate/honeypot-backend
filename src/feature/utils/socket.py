@@ -5,17 +5,11 @@ from typing import (
     Callable,
     Awaitable,
     Any,
-    Protocol,
     Type,
     TypeVar,
     ParamSpec,
-    ClassVar,
 )
-from pydantic import ValidationError
 from expression import curry
-from source.base import DataSource
-from logger import Logger
-from db.models import ModelBase
 
 T = TypeVar("T")
 TException = TypeVar("TException", bound=Exception)
@@ -58,39 +52,39 @@ async def start_server(
         await server.serve_forever()
 
 
-TS = TypeVar("TS", bound=ModelBase)
+# TS = TypeVar("TS", bound=ModelBase)
 
 
-class SocketSource(DataSource[TS], Protocol[TS]):
-    """
-    对来源是socket发送数据的DataSource的封装
+# class SocketSource(DataSource[TS], Protocol[TS]):
+#     """
+#     对来源是socket发送数据的DataSource的封装
 
-    用法：
+#     用法：
 
-    >>> @lifespan_scope
-    >>> @inject_constructor
-    >>> class MySource(SocketSource[MyDBModel]):
-    >>>     schema = MySchema
-    >>>     socket = Socket(ip=..., port=...)
-    >>>     logger: Logger
-    >>>     crud: CRUDWithSession[MyDBModel]
-    """
+#     >>> @lifespan_scope
+#     >>> @inject_constructor
+#     >>> class MySource(SocketSource[MyDBModel]):
+#     >>>     schema = MySchema
+#     >>>     socket = Socket(ip=..., port=...)
+#     >>>     logger: Logger
+#     >>>     crud: CRUDWithSession[MyDBModel]
+#     """
 
-    socket: ClassVar[Socket]
-    logger: Logger
+#     socket: ClassVar[Socket]
+#     logger: Logger
 
-    async def receive_data_forever(self):
-        self.logger.info(f"start listening socket on {self.socket}")
+#     async def receive_data_forever(self):
+#         self.logger.info(f"start listening socket on {self.socket}")
 
-        async def validate_and_store(s: str | bytes):
-            a = await self.add(s)
-            await self.crud.create(a)
+#         async def validate_and_store(s: str | bytes):
+#             a = await self.add(s)
+#             await self.crud.create(a)
 
-        return await start_server(
-            socket=self.socket,
-            on_receive=catch(ValidationError)(validate_and_store)(
-                on_exception=lambda e: self.logger.warning(
-                    f"validate error: {e.json(indent=2, include_url=False)}"
-                )
-            ),
-        )
+#         return await start_server(
+#             socket=self.socket,
+#             on_receive=catch(ValidationError)(validate_and_store)(
+#                 on_exception=lambda e: self.logger.warning(
+#                     f"validate error: {e.json(indent=2, include_url=False)}"
+#                 )
+#             ),
+#         )

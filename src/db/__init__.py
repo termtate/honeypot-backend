@@ -1,2 +1,2 @@
 from .di import DBModule as DBModule
-from .session import SessionContextManager as SessionContextManager
+from sqlmodel.ext.asyncio.session import AsyncSession as AsyncSession

@@ -5,9 +5,10 @@ from sqlalchemy.ext.asyncio import (
     create_async_engine,
     AsyncEngine,
 )
+
 from sqlmodel.ext.asyncio.session import AsyncSession
+from sqlalchemy.ext.asyncio.session import _AsyncSessionContextManager
 from fastapi_injector import request_scope
-from .session import SessionContextManager
 
 
 class DBModule(Module):
@@ -35,13 +36,13 @@ class DBModule(Module):
 
     @request_scope
     @provider
-    def provide_db_session_context_manager(
-        self, session_maker: async_sessionmaker[AsyncSession]
-    ) -> SessionContextManager:
-        return SessionContextManager(session_maker())
+    def provide_session_manager(
+        self, sessionmaker: async_sessionmaker[AsyncSession]
+    ) -> _AsyncSessionContextManager[AsyncSession]:
+        return sessionmaker.begin()
 
     @provider
-    def provide_db_session(
-        self, context: SessionContextManager
+    def provide_request_session(
+        self, manager: _AsyncSessionContextManager[AsyncSession]
     ) -> AsyncSession:
-        return context.async_session
+        return manager.async_session

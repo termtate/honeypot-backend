@@ -1,1 +1,1 @@
-from .base import CRUDWithSession as CRUDWithSession, CRUDBase as CRUDBase
+from .base import CRUDBase as CRUDBase

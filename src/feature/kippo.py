@@ -14,17 +14,22 @@ class DBModel(Model, ModelBase, table=True):
     __tablename__: str = "kippo"
 
 
-class Kippo(Honeypot[Model, DBModel], DockerMixin):
+# router = APIRouter(prefix="/kippo", tags=["kippo"])
+
+
+class Kippo(Honeypot[Model, DBModel]):
     router = APIRouter(prefix="/kippo", tags=["kippo"])
     attack_model = Model
     db_model = DBModel
 
-    docker_config = {"container_name": "kippo"}
-
-    @staticmethod
-    def configure_docker_routes(route):
-        route.configure_change_container_state("start", "stop")
-        route.configure_get_container_state()
+    docker_config = DockerMixin(
+        router,
+        config={"container_name": "kippo"},
+        routes=lambda r: [
+            r.configure_change_container_state("start", "stop"),
+            r.configure_get_container_state(),
+        ],
+    )
 
     @staticmethod
     def configure_routes(route) -> None:
