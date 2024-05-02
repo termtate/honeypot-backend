@@ -2,6 +2,7 @@ from db.models import ModelBase, Field
 from .base import Honeypot, APIRouter
 from .base.mixin.docker import DockerMixin
 from schema.base import Schema
+from datetime import datetime
 
 
 class Model(Schema):
@@ -20,6 +21,8 @@ class Model(Schema):
         }
     )
     protocol_version: str = Field(schema_extra={"examples": ["HTTP/1.0"]})
+
+    time: datetime = Field(default_factory=datetime.now)
 
 
 class DBModel(Model, ModelBase, table=True):
