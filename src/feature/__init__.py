@@ -11,9 +11,10 @@ from .real_honeypot import RealHoneypot
 from .webtrap import Webtrap
 from .main import router as main_router, store
 from .base.mixin import DockerMixin
+from user import api_router as user_router
 
 
-all_honeypots: list[Type[Honeypot]] = [
+all_honeypots = [
     Conpot,
     Honeyd,
     Kippo,
@@ -55,7 +56,7 @@ def configure_routes():
 api_router.include_router(docker_router)
 
 api_router.include_router(main_router)
-
+api_router.include_router(user_router)
 
 async def configure_main(injector):
     for main in mains:
