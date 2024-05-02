@@ -19,7 +19,7 @@ from schema.base import Schema
 from .mixin import DockerMixin, MainStream
 from contextlib import AbstractAsyncContextManager
 from .lifespan_context import LifespanContext
-
+from datetime import datetime
 TModel = TypeVar("TModel", bound=Schema)
 TDBModel = TypeVar("TDBModel", bound=ModelBase)
 
@@ -36,12 +36,14 @@ class Route(Generic[TModel, TDBModel]):
         async def default_get_attacks(
             offset: int = 0,
             limit: int = 10,
+            from_date: datetime | None = None,
+            to_date: datetime | None = None,
             session: AsyncSession = Injected(AsyncSession),
         ) -> list[TDBModel]:
             return [
                 attack
-                async for attack in self.honeypot.crud.get(
-                    session, offset, limit
+                async for attack in self.honeypot.crud.get_by_time(
+                    session, offset, limit, from_date, to_date
                 )
             ]
 
