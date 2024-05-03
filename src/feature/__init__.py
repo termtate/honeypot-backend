@@ -6,6 +6,7 @@ from .docker import router as docker_router, docker
 from .conpot import Conpot
 from .honeyd import Honeyd
 from .kippo import Kippo
+from .snap7 import Snap7
 from .real_honeypot import RealHoneypot
 from .webtrap import Webtrap
 from .main import router as main_router, store
@@ -19,6 +20,7 @@ all_honeypots = [
     Kippo,
     RealHoneypot,
     Webtrap,
+    Snap7,
 ]
 api_router = APIRouter()
 
