@@ -53,7 +53,10 @@ async def analysis():
 
 
 @Conpot.router.get("/analysis2")
-async def analysis_with_data_source(
-    session: AsyncSession = Injected(AsyncSession)
+async def analysis_with_crud(
+    session: AsyncSession = Injected(AsyncSession),
 ) -> list[DBModel]:
+    """
+    给honeypot增加接口的示例，且有数据库查询
+    """
     return [item async for item in Conpot.crud.get(session)]

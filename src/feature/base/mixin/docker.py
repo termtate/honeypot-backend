@@ -4,7 +4,6 @@ from httpx import AsyncClient
 from docker.manager import DockerManager
 from docker.base import DockerState
 from typing import (
-    Any,
     Callable,
     Literal,
     overload,
@@ -20,7 +19,7 @@ class DockerMixin(LifespanContext):
         self,
         router: APIRouter,
         config: DockerManager.DockerConfig,
-        routes: Callable[[Route], Any] | None = None,
+        routes: Callable[[Route], list] | None = None,
     ) -> None:
         self.router = router
         self.docker_config = config

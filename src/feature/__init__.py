@@ -1,9 +1,8 @@
 import asyncio
-from typing import Awaitable, Type
-from .base import Honeypot
+from typing import Awaitable
 
 from fastapi import APIRouter
-from .docker import router as docker_router
+from .docker import router as docker_router, docker
 from .conpot import Conpot
 from .honeyd import Honeyd
 from .kippo import Kippo
@@ -27,7 +26,7 @@ api_router = APIRouter()
 dockers: list[DockerMixin] = []
 mains: list[Awaitable] = []
 honeypot_routers = []
-lifespan_events = []
+lifespan_events = [docker]
 
 for honeypot in all_honeypots:
     honeypot_routers.append(honeypot.router)
@@ -57,6 +56,7 @@ api_router.include_router(docker_router)
 
 api_router.include_router(main_router)
 api_router.include_router(user_router)
+
 
 async def configure_main(injector):
     for main in mains:
